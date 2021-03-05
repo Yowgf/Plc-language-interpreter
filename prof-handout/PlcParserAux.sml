@@ -1,13 +1,12 @@
 (* Plc Parser Aux *)
 
 (* Creat the body of a function expression. *)
-fun makeFunAux (n: int, xs: (plcType * string) list, e: expr): expr = if n < length xs
-    then Let(#1(hd(xs)), Item(n, #2(hd(xs))), makeFunAux(n + 1, tl xs, e))
-    else e;
+fun makeFunAux (n: int, xs: (plcType * string) list, e: expr): expr =
+    e (* TODO *)
 
 (* Create the list of arguments of a function. *)
 fun makeType (args: (plcType * string) list): plcType =
-    List[map(fn (argType, argName) => argType) args];
+    ListT [] (* TODO *)
 
 (* Create a function expression. *)
 fun makeFun (f: string, xs: (plcType * string) list, rt: plcType, e1: expr, e2: expr): expr =
