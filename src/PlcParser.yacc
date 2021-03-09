@@ -10,15 +10,20 @@
     | INTT of plcType
     | BOOLT of plcType
     | NILT of plcType
+    | NAME of string
     | LPAREN
     | RPAREN
     | LBRAC
     | RBRAC
+    | LET
+    | EQ
     | EOF
 
 %nonterm Const of expr
        | Type of plcType
        | Atomic_type of plcType
+       | Atomic_expr of expr
+       | Expr of expr
 
 %eop EOF
 
@@ -26,11 +31,19 @@
 
 %keyword
 
-%start Const
+%start Expr
 
 %verbose
 
 %%
+
+Expr:
+       Atomic_expr(Atomic_expr)
+     | LET NAME EQ Const(Let(NAME, Const, Const))
+
+Atomic_expr:
+       NAME (Var(NAME))
+     | Const (Const)
 
 Const:
        INT (ConI(INT))
@@ -45,3 +58,4 @@ Atomic_type:
              INTT (IntT)
            | BOOLT (BoolT)
            | NILT (ListT([]))
+
