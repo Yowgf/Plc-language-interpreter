@@ -52,6 +52,7 @@ name = [a-zA-Z_][a-zA-Z0-9_]*;
 "[" => (LBRAC(yypos, yypos));
 "]" => (RBRAC(yypos, yypos));
 "=" => (EQ(yypos, yypos));
+";" => (SEMICOLON(yypos, yypos));
 "Int" => (INTT(IntT, yypos, yypos));
 "Bool" => (BOOLT(BoolT, yypos, yypos));
 "Nil" => (NILT(ListT([]), yypos, yypos));

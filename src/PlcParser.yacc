@@ -17,13 +17,16 @@
     | RBRAC
     | LET
     | EQ
+    | SEMICOLON
     | EOF
 
-%nonterm Const of expr
+%nonterm Program of expr
+       | Expr of expr
+       | Atomic_expr of expr
+       | Decl of expr
+       | Const of expr
        | Type of plcType
        | Atomic_type of plcType
-       | Atomic_expr of expr
-       | Expr of expr
 
 %eop EOF
 
@@ -31,15 +34,19 @@
 
 %keyword
 
-%start Expr
+%start Program
 
 %verbose
 
 %%
 
+Program: Expr (Expr)
+
 Expr:
-       Atomic_expr(Atomic_expr)
-     | LET NAME EQ Const(Let(NAME, Const, Const))
+       Atomic_expr (Atomic_expr)
+     | Decl (Decl)
+
+Decl: LET NAME EQ Const SEMICOLON Expr (Let(NAME, Const, Expr))
 
 Atomic_expr:
        NAME (Var(NAME))
