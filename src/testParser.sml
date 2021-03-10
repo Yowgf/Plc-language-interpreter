@@ -32,6 +32,9 @@ fromString "()";
 fromString "(Int [])";
 fromString "(Bool [])";
 fromString "(Nil [])";
+fromString "fun myFunc(Int a, Bool b) = 10; myFunc";
+fromString "fn (Int a) => a end";
+fromString "if myVar then a else b";
 
 (*
 fromString "15";

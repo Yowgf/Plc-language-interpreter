@@ -10,7 +10,6 @@
     | INTT of plcType
     | BOOLT of plcType
     | NILT of plcType
-    | NAME of string
     | IF
     | THEN
     | ELSE
@@ -18,12 +17,16 @@
     | RPAREN
     | LBRAC
     | RBRAC
-    | LET
     | EQ
-    | FUN
     | SEMICOLON
     | COLON
     | COMMA
+    | ARROW
+    | LET
+    | FUN
+    | ANON
+    | END
+    | NAME of string
     | EOF
 
 %nonterm Program of expr
@@ -37,8 +40,8 @@
        | Then_block of expr
        | Else_block of expr
        | Function_block of expr
-       | Params of (plcType * string) list
        | Args of (plcType * string) list
+       | Params of (plcType * string) list
 
 %eop EOF
 
@@ -59,19 +62,14 @@ Expr:
      | Decl (Decl)
      | IF Expr Then_block Else_block (If(Expr, Then_block, Else_block))
 
-Then_block: THEN Expr (Expr)
-
-Else_block: ELSE Expr (Expr)
-
-Function_block: Expr (Expr)
+Atomic_expr:
+       NAME (Var(NAME))
+     | Const (Const)
+     | ANON Args ARROW Function_block END (makeAnon (Args, Function_block))
 
 Decl: 
        LET NAME EQ Const SEMICOLON Expr (Let(NAME, Const, Expr))
      | FUN NAME Args EQ Function_block SEMICOLON Expr (Let(NAME, makeAnon (Args, Function_block), Expr))
-
-Atomic_expr:
-       NAME (Var(NAME))
-     | Const (Const)
 
 Const:
        INT (ConI(INT))
@@ -79,12 +77,6 @@ Const:
      | FALSE (ConB(FALSE))
      | LPAREN RPAREN (List([]))
      | LPAREN Type LBRAC RBRAC RPAREN (ESeq(Type))
-
-Args: LPAREN Params RPAREN (Params)
-
-Params: 
-       Typed_var (Typed_var::[])
-     | Typed_var COMMA Params (Typed_var::Params)
 
 Typed_var: Type NAME (Type, NAME)
 
@@ -94,4 +86,16 @@ Atomic_type:
              INTT (IntT)
            | BOOLT (BoolT)
            | NILT (ListT([]))
+
+Then_block: THEN Expr (Expr)
+
+Else_block: ELSE Expr (Expr)
+
+Function_block: Expr (Expr)
+
+Args: LPAREN Params RPAREN (Params)
+
+Params: 
+       Typed_var (Typed_var::[])
+     | Typed_var COMMA Params (Typed_var::Params)
 
