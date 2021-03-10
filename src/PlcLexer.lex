@@ -39,6 +39,7 @@ fun integer(str, lexPos) =
 
 nat = [0-9]+;
 ws  = [\ \t]+;
+name = [a-zA-Z_][a-zA-Z0-9_]*;
 
 %%
 
@@ -50,6 +51,10 @@ ws  = [\ \t]+;
 ")" => (RPAREN(yypos, yypos));
 "[" => (LBRAC(yypos, yypos));
 "]" => (RBRAC(yypos, yypos));
+"=" => (EQ(yypos, yypos));
+";" => (SEMICOLON(yypos, yypos));
 "Int" => (INTT(IntT, yypos, yypos));
 "Bool" => (BOOLT(BoolT, yypos, yypos));
 "Nil" => (NILT(ListT([]), yypos, yypos));
+"var" => (LET(yypos, yypos));
+{name} => (NAME(yytext, yypos, yypos));
