@@ -1,77 +1,111 @@
-%%
+%% (* End User Declarations section, start Declarations section *)
 
 %name PlcParser
 
 %pos int
 
-%term INT of int
+%term
+    (* Constants *)
+      INT of int
     | TRUE of bool
     | FALSE of bool
     | INTT of plcType
     | BOOLT of plcType
     | NILT of plcType
+
+    (* Conditionals *)
     | IF
     | THEN
     | ELSE
+
+    (* Grouping symbols *)
     | LPAREN
     | RPAREN
     | LBRAC
     | RBRAC
     | LCURL
     | RCURL
+
+    (* Separating symbols *)
     | EQ
     | SEMICOLON
     | COLON
     | COMMA
     | ARROW
     | GOESTO
+
+    (* Unary Operators *)
     | NOT
     | NEG
     | HEAD
     | TAIL
     | ISE
     | PRINT
+
+    (* Declaration stuff *)
     | VAR
     | FUN
     | ANON
     | END
+
+    (* Identifier *)
     | NAME of string
+    
     | EOF
 
-%nonterm Start of expr
+%nonterm
+         Start of expr
        | Program of expr
+       
+       (* Expr and Decl *)
        | Expr of expr
        | Atomic_expr of expr
        | Decl of expr
-       | Const of expr
-       | Typed_var of plcType * string
-       | Comps of expr list
-       | PrimU of expr
-       | Type of plcType
-       | Atomic_type of plcType
+
+       (* Conditionals *)
        | Then_block of expr
        | Else_block of expr
+
+       (* Functions *)
        | Function_block of expr
        | Args of (plcType * string) list
        | Params of (plcType * string) list
 
-%eop EOF
+       (* Operators *)
+       | PrimU of expr
 
+       (* Constants *)
+       | Const of expr
+       | Comps of expr list
+
+       (* Types *)
+       | Typed_var of plcType * string
+       | Type of plcType
+       | Atomic_type of plcType
+
+(* Precedence *)
+%right GOESTO
+
+(* Special properties of End Of File token *)
+%eop EOF
 %noshift EOF
 
-%right GOESTO
+(* Make sure to generate .desc file *)
+%verbose
 
 %start Start
 
-%verbose
+%% (* End Declarations section, start rules section *)
 
-%%
-
+(* Necessary so that Program may be reduced to *)
 Start: Program (Program)
 
 Program:
          Expr (Expr)
        | Decl (Decl)
+
+
+(* Expr and Decl *)
 
 Expr:
        Atomic_expr (Atomic_expr)
@@ -90,21 +124,28 @@ Decl:
        VAR NAME EQ Expr SEMICOLON Program (Let(NAME, Expr, Program))
      | FUN NAME Args EQ Function_block SEMICOLON Program (Let(NAME, makeAnon (Args, Function_block), Program))
 
+
+(* Conditionals *)
+
 Then_block: THEN Expr (Expr)
 
 Else_block: ELSE Expr (Expr)
 
-Function_block: Expr (Expr)
+
+(* Functions *)
 
 Args:
       LPAREN RPAREN ([])
     | LPAREN Params RPAREN (Params)
 
+Function_block: Expr (Expr)
+
 Params: 
        Typed_var (Typed_var::[])
      | Typed_var COMMA Params (Typed_var::Params)
 
-Typed_var: Type NAME (Type, NAME)
+
+(* Operators *)
 
 PrimU:
        NOT Expr (Prim1("!", Expr))
@@ -113,6 +154,25 @@ PrimU:
      | TAIL Expr (Prim1("tl", Expr))
      | ISE Expr (Prim1("ise", Expr))
      | PRINT Expr (Prim1("print", Expr))
+
+
+(* Constants *)
+
+Const:
+       INT (ConI(INT))
+     | TRUE (ConB(TRUE))
+     | FALSE (ConB(FALSE))
+     | LPAREN RPAREN (List([]))
+     | LPAREN Type LBRAC RBRAC RPAREN (ESeq(Type))
+
+Comps:
+       Expr COMMA Expr (Expr1 :: Expr2 :: [])
+     | Expr COMMA Comps (Expr :: Comps)
+
+
+(* Types *)
+
+Typed_var: Type NAME (Type, NAME)
 
 Type:
       Atomic_type (Atomic_type)
@@ -123,14 +183,3 @@ Atomic_type:
            | BOOLT (BoolT)
            | NILT (ListT([]))
            | LPAREN Type RPAREN (Type)
-
-Comps:
-       Expr COMMA Expr (Expr1 :: Expr2 :: [])
-     | Expr COMMA Comps (Expr :: Comps)
-
-Const:
-       INT (ConI(INT))
-     | TRUE (ConB(TRUE))
-     | FALSE (ConB(FALSE))
-     | LPAREN RPAREN (List([]))
-     | LPAREN Type LBRAC RBRAC RPAREN (ESeq(Type))
