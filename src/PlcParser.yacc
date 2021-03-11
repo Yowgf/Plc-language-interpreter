@@ -17,6 +17,9 @@
     | IF
     | THEN
     | ELSE
+    | MATCH
+    | WITH
+    | DEFAULT
 
     (* Grouping symbols *)
     | LPAREN
@@ -33,6 +36,7 @@
     | COMMA
     | ARROW
     | GOESTO
+    | PIPE
 
     (* Unary Operators *)
     | NOT
@@ -76,6 +80,8 @@
        (* Conditionals *)
        | Then_block of expr
        | Else_block of expr
+       | Match_expr of (expr option * expr) list
+       | Cond_expr of expr option
 
        (* Functions *)
        | Args of (plcType * string) list
@@ -134,6 +140,7 @@ Expr:
        Atomic_expr (Atomic_expr)
      | AppExpr (AppExpr)
      | IF Expr Then_block Else_block (If(Expr, Then_block, Else_block))
+     | MATCH Expr WITH Match_expr (Match (Expr, Match_expr))
      | PrimU (PrimU)
      | PrimB (PrimB)
      | Expr LBRAC INT RBRAC (Item(INT, Expr))
@@ -160,6 +167,14 @@ Decl:
 Then_block: THEN Expr (Expr)
 
 Else_block: ELSE Expr (Expr)
+
+Match_expr:
+            END ([])
+          | PIPE Cond_expr GOESTO Expr Match_expr ((Cond_expr, Expr)::[])
+
+Cond_expr:
+           Expr (SOME(Expr))
+         | DEFAULT (NONE)
 
 
 (* Functions *)

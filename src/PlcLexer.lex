@@ -55,6 +55,9 @@ name = [a-zA-Z_][a-zA-Z0-9_]*;
 "if" => (IF(yypos, yypos));
 "then" => (THEN(yypos, yypos));
 "else" => (ELSE(yypos, yypos));
+"match" => (MATCH(yypos, yypos));
+"with" => (WITH(yypos, yypos));
+"_" => (DEFAULT(yypos, yypos));
 
 "(" => (LPAREN(yypos, yypos));
 ")" => (RPAREN(yypos, yypos));
@@ -69,6 +72,7 @@ name = [a-zA-Z_][a-zA-Z0-9_]*;
 "," => (COMMA(yypos, yypos));
 "=>" => (ARROW(yypos, yypos));
 "->" => (GOESTO(yypos, yypos));
+"|" => (PIPE(yypos, yypos));
 
 "!" => (NOT(yypos, yypos));
 "-" => (MINUS(yypos, yypos));
