@@ -36,11 +36,21 @@
 
     (* Unary Operators *)
     | NOT
-    | NEG
+    | MINUS
     | HEAD
     | TAIL
     | ISE
     | PRINT
+
+    (* Binary Operators *)
+    | AND
+    | PLUS
+    | MUL
+    | DIV
+    | NEQ
+    | LT
+    | LEQ
+    | CAT
 
     (* Declaration stuff *)
     | VAR
@@ -60,6 +70,7 @@
        (* Expr and Decl *)
        | Expr of expr
        | Atomic_expr of expr
+       | AppExpr of expr
        | Decl of expr
 
        (* Conditionals *)
@@ -67,12 +78,12 @@
        | Else_block of expr
 
        (* Functions *)
-       | Function_block of expr
        | Args of (plcType * string) list
        | Params of (plcType * string) list
 
        (* Operators *)
        | PrimU of expr
+       | PrimB of expr
 
        (* Constants *)
        | Const of expr
@@ -82,9 +93,21 @@
        | Typed_var of plcType * string
        | Type of plcType
        | Atomic_type of plcType
+       | Types of plcType list
 
 (* Precedence *)
-%right GOESTO
+
+%right SEMICOLON GOESTO
+%nonassoc IF
+%nonassoc ELSE
+%left AND
+%left EQ NEQ
+%left LT LEQ
+%right CAT
+%left PLUS MINUS
+%left MUL DIV
+%nonassoc NOT HEAD TAIL ISE PRINT FUN
+%left LBRAC
 
 (* Special properties of End Of File token *)
 %eop EOF
@@ -109,8 +132,11 @@ Program:
 
 Expr:
        Atomic_expr (Atomic_expr)
+     | AppExpr (AppExpr)
      | IF Expr Then_block Else_block (If(Expr, Then_block, Else_block))
      | PrimU (PrimU)
+     | PrimB (PrimB)
+     | Expr LBRAC INT RBRAC (Item(INT, Expr))
 
 Atomic_expr:
              Const (Const)
@@ -118,11 +144,15 @@ Atomic_expr:
            | LCURL Program RCURL (Program)
            | LPAREN Expr RPAREN (Expr)
            | LPAREN Comps RPAREN (List(Comps))
-           | ANON Args ARROW Function_block END (makeAnon (Args, Function_block))
+           | ANON Args ARROW Expr END (makeAnon (Args, Expr))
+
+AppExpr:
+         Atomic_expr Atomic_expr %prec FUN (Call(Atomic_expr1, Atomic_expr2))
+       | AppExpr Atomic_expr %prec FUN (Call(AppExpr, Atomic_expr))
 
 Decl:
        VAR NAME EQ Expr SEMICOLON Program (Let(NAME, Expr, Program))
-     | FUN NAME Args EQ Function_block SEMICOLON Program (Let(NAME, makeAnon (Args, Function_block), Program))
+     | FUN NAME Args EQ Expr SEMICOLON Program (Let(NAME, makeAnon (Args, Expr), Program))
 
 
 (* Conditionals *)
@@ -138,8 +168,6 @@ Args:
       LPAREN RPAREN ([])
     | LPAREN Params RPAREN (Params)
 
-Function_block: Expr (Expr)
-
 Params: 
        Typed_var (Typed_var::[])
      | Typed_var COMMA Params (Typed_var::Params)
@@ -149,12 +177,24 @@ Params:
 
 PrimU:
        NOT Expr (Prim1("!", Expr))
-     | NEG Expr (Prim1("-", Expr))
+     | MINUS Expr (Prim1("-", Expr))
      | HEAD Expr (Prim1("hd", Expr))
      | TAIL Expr (Prim1("tl", Expr))
      | ISE Expr (Prim1("ise", Expr))
      | PRINT Expr (Prim1("print", Expr))
 
+PrimB:
+       Expr AND Expr (Prim2("&&", Expr1, Expr2))
+     | Expr PLUS Expr (Prim2("+", Expr1, Expr2))
+     | Expr MINUS Expr (Prim2("-", Expr1, Expr2))
+     | Expr MUL Expr (Prim2("*", Expr1, Expr2))
+     | Expr DIV Expr (Prim2("/", Expr1, Expr2))
+     | Expr EQ Expr (Prim2("=", Expr1, Expr2))
+     | Expr NEQ Expr (Prim2("!=", Expr1, Expr2))
+     | Expr LT Expr (Prim2("<", Expr1, Expr2))
+     | Expr LEQ Expr (Prim2("<=", Expr1, Expr2))
+     | Expr CAT Expr (Prim2("::", Expr1, Expr2))
+     | Expr SEMICOLON Expr (Prim2(";", Expr1, Expr2))
 
 (* Constants *)
 
@@ -176,6 +216,8 @@ Typed_var: Type NAME (Type, NAME)
 
 Type:
       Atomic_type (Atomic_type)
+    | LPAREN Types RPAREN (ListT(Types))
+    | LBRAC Type RBRAC (SeqT(Type))
     | Type GOESTO Type (FunT(Type1, Type2))
 
 Atomic_type:
@@ -183,3 +225,7 @@ Atomic_type:
            | BOOLT (BoolT)
            | NILT (ListT([]))
            | LPAREN Type RPAREN (Type)
+
+Types:
+       Type COMMA Type (Type1 :: Type2 :: [])
+     | Type COMMA Types (Type :: Types)

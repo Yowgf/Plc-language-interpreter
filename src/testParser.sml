@@ -38,6 +38,12 @@ fromString "(Bool [])";
 fromString "(Nil [])";
 fromString "(Int -> Bool -> Nil [])";
 fromString "((Int -> Int) -> Bool [])";
+fromString "((Int, Bool) [])";
+fromString "((Int, Int) -> Bool [])";
+fromString ("((Bool -> Int, Nil -> Bool, Int -> Nil) -> Nil -> " ^
+            "(Nil, Bool, Int) [])");
+fromString "([Int] [])";
+fromString "([(Bool, Int)] [])";
 
 (* Unary operators *)
 fromString "!42";
@@ -46,6 +52,24 @@ fromString "hd ()";
 fromString "tl 900";
 fromString "ise ()";
 fromString "print 10001";
+
+(* Binary operators *)
+fromString "(true && false)";
+fromString "(a + b)";
+fromString "var x = x + y; x * y";
+fromString ("fun sum(Int a, Int b) = { var s = a + b; s }; " ^
+            "{ sum(1, 0) } && false");
+fromString "(a - b)";
+fromString "(a / b)";
+fromString "fun double(Int a) = a * 2; { var a = 4; double(a) }";
+fromString "(a = b)";
+fromString "(a != b)";
+fromString "(a < b)";
+fromString "(a <= b)";
+fromString "(3::7::t)";
+(* Test Precedence *)
+fromString ("a; b; if a then if b then c else d else a && b && " ^
+           "a = b = c != a != a :: b :: a + b + a * b * a / b / 1");
 
 (* Anonymous function *)
 fromString "fn (Int a) => a end";
@@ -59,6 +83,8 @@ fromString "fun myFunc(Int a, Bool b) = 10; myFunc";
 fromString "fun myFunc2(Int a, Nil b) = a; myFunc2";
 fromString "fun myFunc3() = d; myFunc3";
 fromString "fun myFunc4() = d; fun myFunc5() = e; f";
+(* Function application precedence *)
+fromString "fun invert(Int a) = -a; print invert a";
 
 (* Variable declaration *)
 fromString "var x = 10; x";
@@ -71,7 +97,9 @@ fromString ("if myVar then if true then () else false else" ^
             " fn (Int i) => i end");
 
 (* Special nested stuff *)
-fromString "fun invert(Int a) = { var x = -a; x }; 0";
+fromString "fun invert(Int a) = { var x = -a; x }; Invert(50)";
+fromString "fun minus(Int a, Int b) = a - b; minus(42, 21)";
+fromString "(6, false)[1]";
     
 (*
 fromString "15";

@@ -71,11 +71,20 @@ name = [a-zA-Z_][a-zA-Z0-9_]*;
 "->" => (GOESTO(yypos, yypos));
 
 "!" => (NOT(yypos, yypos));
-"-" => (NEG(yypos, yypos));
+"-" => (MINUS(yypos, yypos));
 "hd" => (HEAD(yypos, yypos));
 "tl" => (TAIL(yypos, yypos));
 "ise" => (ISE(yypos, yypos));
 "print" => (PRINT(yypos, yypos));
+
+"&&" => (AND(yypos, yypos));
+"+" => (PLUS(yypos, yypos));
+"*" => (MUL(yypos, yypos));
+"/" => (DIV(yypos, yypos));
+"!=" => (NEQ(yypos, yypos));
+"<" => (LT(yypos, yypos));
+"<=" => (LEQ(yypos, yypos));
+"::" => (CAT(yypos, yypos));
 
 "var" => (VAR(yypos, yypos));
 "fun" => (FUN(yypos, yypos));
