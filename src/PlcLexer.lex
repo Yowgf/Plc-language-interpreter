@@ -37,13 +37,15 @@ fun integer(str, lexPos) =
 
 %header (functor PlcLexerFun(structure Tokens: PlcParser_TOKENS));
 
-ws  = [\ \t]+;
+ws  = [\ \t\n]+;
 nat = [0-9]+;
 name = [a-zA-Z_][a-zA-Z0-9_]*;
+comment = "(*"[^"*)"]*"*)";
 
 %%
 
 {ws} => (lex());
+{comment} => (lex());
 
 {nat} => (integer(yytext, yypos));
 "true" => (TRUE(true, yypos, yypos));
@@ -92,6 +94,7 @@ name = [a-zA-Z_][a-zA-Z0-9_]*;
 
 "var" => (VAR(yypos, yypos));
 "fun" => (FUN(yypos, yypos));
+"rec" => (REC(yypos, yypos));
 "fn" => (ANON(yypos, yypos));
 "end" => (END(yypos, yypos));
 

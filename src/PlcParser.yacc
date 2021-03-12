@@ -59,6 +59,7 @@
     (* Declaration stuff *)
     | VAR
     | FUN
+    | REC
     | ANON
     | END
 
@@ -160,6 +161,7 @@ AppExpr:
 Decl:
        VAR NAME EQ Expr SEMICOLON Program (Let(NAME, Expr, Program))
      | FUN NAME Args EQ Expr SEMICOLON Program (Let(NAME, makeAnon (Args, Expr), Program))
+     | FUN REC NAME Args COLON Type EQ Expr SEMICOLON Program (makeFun(NAME, Args, Type, Expr, Program))
 
 
 (* Conditionals *)
