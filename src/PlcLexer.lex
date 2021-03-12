@@ -40,7 +40,7 @@ fun integer(str, lexPos) =
 ws  = [\ \t\n]+;
 nat = [0-9]+;
 name = [a-zA-Z_][a-zA-Z0-9_]*;
-comment = "(*"[^"*)"]*"*)";
+comment = "(*"(.|\n)*?"*)";
 
 %%
 
