@@ -172,11 +172,8 @@ Else_block: ELSE Expr (Expr)
 
 Match_expr:
             END ([])
-          | PIPE Cond_expr GOESTO Expr Match_expr ((Cond_expr, Expr)::[])
-
-Cond_expr:
-           Expr (SOME(Expr))
-         | DEFAULT (NONE)
+          | PIPE Expr GOESTO Expr Match_expr ((SOME(Expr1), Expr2)::Match_expr)
+          | PIPE DEFAULT GOESTO Expr END ((NONE, Expr)::[])
 
 
 (* Functions *)
