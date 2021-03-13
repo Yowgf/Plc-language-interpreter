@@ -150,10 +150,5 @@ fromString "fun f(Int x) = x; f(1)";
 fromString "match x with | 0 -> 1| _ -> -1 end";
 
 (* A lot of tests in this file *)
-(*
-(use "testParserCases.sml")
-handle ParseError => printTestError "OOps";
-
-(test cases)
-handle ParseError => printTestError "OOps";
-*)
+use "testParserCases.sml";
+test cases;

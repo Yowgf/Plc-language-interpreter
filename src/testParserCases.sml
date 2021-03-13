@@ -63,9 +63,7 @@ fun printTestError (str) =
                                   " test in case***" ^ str ^ "***\n"); 1)
 
 fun test ((str: string, e: expr)::test_list) =
-    if equivalent (fromString str
-                   handle ParseError => printTestError str,
-                   e)
+    if equivalent (fromString str, e)
     then
         test test_list
     else printTestError str
