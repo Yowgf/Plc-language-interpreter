@@ -1,7 +1,5 @@
 use "Absyn.sml";
 
-exception ParserTestFailure
-
 (* fun test (current_test::test_list) = 
   if fromString(#1 current_test) = #2 current_test then
     test(test_list)

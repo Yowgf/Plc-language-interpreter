@@ -1,6 +1,6 @@
-(**
-  * Recursively calculates fibonacci of n
-  *)
+(*
+    Recursively calculates fibonacci of n
+*)
 
 fun rec fib (Int n): Int = 
     if n = 0 then

@@ -37,10 +37,10 @@ fun integer(str, lexPos) =
 
 %header (functor PlcLexerFun(structure Tokens: PlcParser_TOKENS));
 
-ws  = [\ \t\n]+;
+ws  = [\ \t\n\r]+;
 nat = [0-9]+;
 name = [a-zA-Z_][a-zA-Z0-9_]*;
-comment = "(*"(.|\n)*?"*)";
+comment = "(*"[^"*)"]*"*)";
 
 %%
 

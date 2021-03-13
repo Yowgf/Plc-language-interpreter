@@ -1,0 +1,14 @@
+(* Tests for match expression parsing in PLC *)
+
+fun isEven(Int v) = 
+    match v with
+        | 0 -> true (* Even *)
+        | 1 -> false (* Odd *)
+        | 2 -> true (* Even *)
+        | 3 -> false (* Odd *)
+        | _ -> -1 (* \?/ *)
+    end;
+
+f(9)
+
+(* Comment at file end *)
