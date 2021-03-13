@@ -1,12 +1,76 @@
-use "Absyn.sml";
+fun equivalentType (IntT, IntT) = true
+  | equivalentType (BoolT, BoolT) = true
+  | equivalentType (FunT (t11, t12), FunT (t21, t22)) =
+    equivalentType (t11, t21) andalso equivalentType (t12, t22)
+  | equivalentType (ListT (h1::t1), ListT(h2::t2)) =
+    equivalentType(h1, h2) andalso equivalentType(ListT t1, ListT t2)
+  | equivalentType (ListT [], ListT (h::t)) = false
+  | equivalentType (ListT (h::t), ListT []) = false
+  | equivalentType (ListT [], ListT []) = true
+  | equivalentType (SeqT t1, SeqT t2) = equivalentType(t1, t2)
+  | equivalentType (_, _) = false
 
-(* fun test (current_test::test_list) = 
-  if fromString(#1 current_test) = #2 current_test then
-    test(test_list)
-  else
-    raise ParserTestFailure *)
+fun equivalent (inExpr: expr, expectedExpr: expr) =
+    case (inExpr, expectedExpr) of
+        (ConI a, ConI b) => a = b
+      | (ConB a, ConB b) => a = b
+      | (ESeq a, ESeq b) => equivalentType(a, b)
+      | (Var str1, Var str2) => str1 = str2
+      | (Let (str1, e11, e12), Let (str2, e21, e22)) =>
+        str1 = str2 andalso
+        equivalent(e11, e21) andalso equivalent(e12, e22)
+      | (Letrec (str11, t11, str12, t12, e11, e12),
+         Letrec (str21, t21, str22, t22, e21, e22)) =>
+        str11 = str21 andalso str12 = str22 andalso
+        equivalentType(t11, t21) andalso equivalentType (t12, t22) andalso
+        equivalent(e11, e21) andalso equivalent(e12, e22)
+      | (Prim1(str1, e1), Prim1(str2, e2)) =>
+        str1 = str2 andalso equivalent(e1, e2)
+      | (Prim2(str1, e11, e12), Prim2(str2, e21, e22)) =>
+        str1 = str2 andalso equivalent(e11, e21) andalso equivalent(e12, e22)
+      | (If(e11, e12, e13), If(e21, e22, e23)) =>
+        equivalent(e11, e21) andalso equivalent (e12, e22) andalso
+        equivalent(e13, e23)
+      (* Begin match *)
+      | (Match(e11, (SOME(e12), e13)::t1), Match(e21, (SOME(e22), e23)::t2)) =>
+        equivalent(e11, e21) andalso equivalent (e12, e22) andalso
+        equivalent(e13, e23) andalso equivalent (Match(e11, t1), Match(e21, t2))
+      | (Match(_, (NONE, _)::_), Match(_, (SOME(e22), _)::_)) => false
+      | (Match(_, (SOME(e12), _)::_), Match(_, (NONE, _)::_)) => false
+      | (Match(e11, (NONE, e12)::t1), Match(e21, (NONE, e22)::t2)) =>
+        equivalent(e11, e21) andalso equivalent (e12, e22) andalso
+        equivalent (Match(e11, t1), Match(e21, t2))
+      | (Match(e11, []), Match(e21, (e22, e23)::t2)) => false
+      | (Match(e11, (e12, e13)::t1), Match(e21, [])) => false
+      | (Match(e1, []), Match(e2, [])) => equivalent(e1, e2)
+      (* End match *)
+      | (Call (e11, e12), Call (e21, e22)) =>
+        equivalent (e11, e21) andalso equivalent (e12, e22)
+      | (List (h1::t1), List (h2::t2)) =>
+        equivalent (h1, h2) andalso equivalent (List t1, List t2)
+      | (List [], List (_::_)) => false
+      | (List (_::_), List []) => false
+      | (List [], List []) => true
+      | (Item (i1, e1), Item (i2, e2)) =>
+        i1 = i2 andalso equivalent (e1, e2)
+      | (Anon (t1, str1, e1), Anon (t2, str2, e2)) =>
+        equivalentType (t1, t2) andalso str1 = str2 andalso
+        equivalent (e1, e2)
+      | _ => false;
 
-    
+fun printTestError (str) =
+    (TextIO.output(TextIO.stdOut, "Error in some" ^
+                                  " test in case***" ^ str ^ "***\n"); 1)
+
+fun test ((str: string, e: expr)::test_list) =
+    if equivalent (fromString str
+                   handle ParseError => printTestError str,
+                   e)
+    then
+        test test_list
+    else printTestError str
+  | test [] = 0
+
 val cases =
   (
     let val s = "0";
@@ -446,5 +510,3 @@ val cases =
         (s, e)
     end
   ) ];
-
-test cases;
