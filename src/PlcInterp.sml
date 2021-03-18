@@ -47,7 +47,8 @@ fun evalPrim1 (opName, x) =
         "!" => BoolV(not (evalBool x))
       | "-" => IntV(~ (evalInt x))
 
-fun matchResult (v, (NONE, e2)::[], evalFn, en): expr = e2
+fun matchResult (v, [], evalFn, en): expr = raise ValueNotFoundInMatch
+  | matchResult (v, (NONE, e)::[], evalFn, en): expr = e
   | matchResult (v, (SOME(e1), e2)::l, evalFn, en): expr =
     case v of
         IntV(x) => if x = evalInt (evalFn (e1, en)) then e2 else matchResult(v, l, evalFn, en)
@@ -65,7 +66,11 @@ fun eval (e, en) =
       | Match(e1, alts) => eval (matchResult(eval (e1, en), alts, eval, en), en)
 
 fun printInvalidInput input =
-    TextIO.output(TextIO.stdOut, "Invalid syntax: \n\n***\n" ^
+    TextIO.output(TextIO.stdOut, "\nInvalid syntax: \n***\n" ^
+                                 input ^ "***\n\n")
+
+fun printValueNotFoundInMatch input =
+    TextIO.output(TextIO.stdOut, "\nValue not found in match: \n***\n" ^
                                  input ^ "***\n\n")
 
 fun parseInput input =
@@ -82,6 +87,7 @@ fun interp (isInterpreting, en)  =
             (print ("> " ^ val2string (eval (parserOutput, en)) ^ "\n\n");
              interp (true, en))
             handle QuitInterp => interp (false, en)
+                 | ValueNotFoundInMatch => (printValueNotFoundInMatch(input); interp (true, en))
                  | _ => interp (true, en)
         end
     else 0;
