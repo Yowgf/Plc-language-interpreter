@@ -46,6 +46,12 @@ fun evalPrim1 (opName, x) =
     case opName of
         "!" => BoolV(not (evalBool x))
       | "-" => IntV(~ (evalInt x))
+
+fun matchResult (v, (NONE, e2)::[], evalFn, en): expr = e2
+  | matchResult (v, (SOME(e1), e2)::l, evalFn, en): expr =
+    case v of
+        IntV(x) => if x = evalInt (evalFn (e1, en)) then e2 else matchResult(v, l, evalFn, en)
+      | BoolV(x) => if x = evalBool (evalFn (e1, en)) then e2 else matchResult(v, l, evalFn, en)
                            
 fun eval (e, en) =
     case e of
@@ -56,6 +62,7 @@ fun eval (e, en) =
       | Prim2(opName, e1, e2) => evalPrim2(opName, eval (e1, en), eval (e2, en))
       | Prim1(opName, e1) => evalPrim1(opName, eval (e1, en))
       | If(cond, e1, e2) => if evalBool (eval (cond, en)) then eval (e1, en) else eval (e2, en)
+      | Match(e1, alts) => eval (matchResult(eval (e1, en), alts, eval, en), en)
 
 fun printInvalidInput input =
     TextIO.output(TextIO.stdOut, "Invalid syntax: \n\n***\n" ^
@@ -72,7 +79,7 @@ fun interp (isInterpreting, en)  =
             val input = (print "< "; TextIO.input TextIO.stdIn)
             val parserOutput = parseInput input
         in
-            (print ("> " ^ val2string (eval (parserOutput, en)) ^ "\n");
+            (print ("> " ^ val2string (eval (parserOutput, en)) ^ "\n\n");
              interp (true, en))
             handle QuitInterp => interp (false, en)
                  | _ => interp (true, en)
