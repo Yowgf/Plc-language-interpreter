@@ -10,6 +10,8 @@ use "PlcParser.yacc.sml";
 use "PlcLexer.lex.sml";
 use "Parse.sml";
 
+use "PlcChecker.sml";
+
 exception Impossible (* Nothing worked! *)
 exception HDEmptySeq (* Head empty sequence *)
 exception TLEmptySeq (* Tail empty sequence *)
