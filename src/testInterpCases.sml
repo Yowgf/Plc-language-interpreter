@@ -1,6 +1,32 @@
 (* Just a list of test cases and expected values for the interpreter
  *)
 
+(*
+
+How to test exception throwing?
+
+*)
+
+(* If this function returns false, then the test failed (e.g.
+   running the code didn't raise the expected exception) *)
+fun failsWith (code, except: string) =
+    (run code; true)
+    handle
+         (* Type exceptions *)
+           EmptySeq => except = "EmptySeq"
+         | UnknownType => except = "UnknownType"
+         | NotEqTypes => except = "NotEqTypes"
+         | WrongRetType => except = "WrongRetType"
+         | DiffBrTypes => except = "DiffBrTypes"
+         | IfCondNotBool => except = "IfCondNotBool"
+         | NoMatchResults => except = "NoMatchResults"
+         | MatchResTypeDiff => except = "MatchResTypeDiff"
+         | MatchCondTypesDiff => except = "MatchCondTypesDiff"
+         | CallTypeMisM => except = "CallTypeMis"
+         | NotFunc => except = "NotFunc"
+         | ListOutOfRange => except = "ListOutOfRange"
+         | OpNonList => except = "OpNonList"
+
 fun printTestFailure (testExpr) =
     (TextIO.output(TextIO.stdOut, "Error in some" ^
                                   " test in case...\n\n");
