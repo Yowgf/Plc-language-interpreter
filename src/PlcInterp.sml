@@ -48,15 +48,18 @@ fun matchResult (v, [], evalFn, en): expr = raise ValueNotFoundInMatch
     case v of
         IntV(x) => if x = evalInt (evalFn (e1, en)) then e2 else matchResult(v, l, evalFn, en)
       | BoolV(x) => if x = evalBool (evalFn (e1, en)) then e2 else matchResult(v, l, evalFn, en)
-                           
+
 fun eval (e, en) =
     case e of
         ConI(x) => IntV(x)
       | ConB(x) => BoolV(x)
       | Var(name) => lookup en name
-      | Let(name, e1, e2) => (en = (name, eval (e1, en))::en; eval (e2, en))
+      | Let(name, e1, e2) => eval(e2, (name, eval(e1, en))::en)
       | Prim1(opName, e1) => evalPrim1(opName, eval (e1, en))
-      | Prim2(opName, e1, e2) => evalPrim2(opName, eval (e1, en), eval (e2, en))
+      | Prim2(opName, e1, e2) =>
+        (case opName of
+             ";" => (eval(e1, en); eval(e2, en))
+           | _ => evalPrim2(opName, eval (e1, en), eval (e2, en)))
       | If(cond, e1, e2) => if evalBool (eval (cond, en)) then eval (e1, en) else eval (e2, en)
       | Match(e1, alts) => eval (matchResult(eval (e1, en), alts, eval, en), en)
       | List(l) => ListV(evalList(l, eval, en))
@@ -84,7 +87,6 @@ fun interp (isInterpreting, en)  =
              interp (true, en))
             handle QuitInterp => interp (false, en)
                  | ValueNotFoundInMatch => (printValueNotFoundInMatch(input); interp (true, en))
-                 | _ => interp (true, en)
         end
     else 0;
 

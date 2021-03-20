@@ -2,7 +2,7 @@
 
 use "PlcInterp.sml";
 
-val en: 'a env = [];
+val en: plcVal env = [];
 
 fun run(e: expr) =
     let
