@@ -13,3 +13,7 @@ fun printHDEmptySeq input =
 fun printTLEmptySeq input =
     TextIO.output(TextIO.stdOut, "\nEmpty sequence provided to tl operator: \n***\n" ^
                                  input ^ "***\n\n")
+
+fun printNotAFunc input =
+    TextIO.output(TextIO.stdOut, "\nCall to non-functional entity:\n***\n" ^
+                                 input ^ "***\n\n")

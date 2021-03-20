@@ -27,20 +27,8 @@ fun evalBool (BoolV x) = x
 fun listComponents (ListV x) = x
 
 fun evalList ([], evalFn, en) = []
-  | evalList ((h::t), evalFn, en) = (evalFn (h, en))::evalList(t, evalFn, en) 
-                           
-fun evalPrim2 (opName, x, y) =
-    case opName of
-        "&&" => BoolV(evalBool x andalso evalBool y)
-      | "+" => IntV(evalInt x + evalInt y)
-      | "-" => IntV(evalInt x - evalInt y)
-      | "*" => IntV(evalInt x * evalInt y)
-      | "/" => IntV(evalInt x div evalInt y)
-      | "!=" => BoolV(evalInt x <> evalInt y)
-      | "<" => BoolV(evalInt x < evalInt y)
-      | "<=" => BoolV(evalInt x <= evalInt y)
-      | "::" => ListV(x :: listComponents (y))
-                           
+  | evalList ((h::t), evalFn, en) = (evalFn (h, en))::evalList(t, evalFn, en)
+
 fun evalPrim1 (opName, x) =
     case opName of
         "!" => BoolV(not (evalBool x))
@@ -60,6 +48,18 @@ fun evalPrim1 (opName, x) =
                   | ListV(l) => BoolV(false)
                   | _ => raise Impossible
                 )
+                           
+fun evalPrim2 (opName, x, y) =
+    case opName of
+        "&&" => BoolV(evalBool x andalso evalBool y)
+      | "+" => IntV(evalInt x + evalInt y)
+      | "-" => IntV(evalInt x - evalInt y)
+      | "*" => IntV(evalInt x * evalInt y)
+      | "/" => IntV(evalInt x div evalInt y)
+      | "!=" => BoolV(evalInt x <> evalInt y)
+      | "<" => BoolV(evalInt x < evalInt y)
+      | "<=" => BoolV(evalInt x <= evalInt y)
+      | "::" => ListV(x :: listComponents (y))
 
 fun matchResult (v, [], evalFn, en): expr = raise ValueNotFoundInMatch
   | matchResult (v, (NONE, e)::[], evalFn, en): expr = e
@@ -68,12 +68,29 @@ fun matchResult (v, [], evalFn, en): expr = raise ValueNotFoundInMatch
         IntV(x) => if x = evalInt (evalFn (e1, en)) then e2 else matchResult(v, l, evalFn, en)
       | BoolV(x) => if x = evalBool (evalFn (e1, en)) then e2 else matchResult(v, l, evalFn, en)
 
+(*
+Precisamos do corpo da funcao ser avaliado antes de adiciona-lo ao
+ambiente. Ao mesmo tempo, precisamos te-lo no ambiente antes de no
+ambiente antes de avalia-lo.
+*)
+fun evalCall (Clos(fName, argIndicator, fBody, en), fArgs, evalFun) =
+    (* evalFun(fBody, (fName, Clos(IntT, argIndicator, fBody, en))::(argIndicator, fArgs)::en) *)
+    evalFun(fBody, (fName, evalFun(Anon(IntT, argIndicator, fBody), en))::(argIndicator, fArgs)::en)
+  | evalCall _ = raise NotAFunc
+
+(* Teste de fun rec
+fun rec foo(Int a): Int = foo(a); foo(5)
+Letrec("foo",IntT,"a",IntT,Call (Var "foo",Var "a"),Call (Var "foo",ConI 5))
+*)                       
 fun eval (e, en) =
     case e of
         ConI(x) => IntV(x)
       | ConB(x) => BoolV(x)
+      | ESeq(_) => SeqV([])
       | Var(name) => lookup en name
       | Let(name, e1, e2) => eval(e2, (name, eval(e1, en))::en)
+      | Letrec(fName, argTypes, argIndicator, retType, e1, e2) =>
+        eval(e2, (fName, Clos(fName, argIndicator, e1, en))::en)
       | Prim1(opName, e1) => evalPrim1(opName, eval (e1, en))
       | Prim2(opName, e1, e2) =>
         (case opName of
@@ -82,8 +99,11 @@ fun eval (e, en) =
         )
       | If(cond, e1, e2) => if evalBool (eval (cond, en)) then eval (e1, en) else eval (e2, en)
       | Match(e1, alts) => eval (matchResult(eval (e1, en), alts, eval, en), en)
+      | Call(f, fArgs) => evalCall(eval(f, en), eval(fArgs, en), eval)
       | List(l) => ListV(evalList(l, eval, en))
       | Item(pos, l) => List.nth(listComponents(eval (l, en)), pos)
+      (* Maybe will bug once type checking is needed *)
+      | Anon(argTypes, argIndicator, fBody) => Clos("", argIndicator, fBody, en)
 
 fun parseInput input =
     if input = ":quit\n" then raise QuitInterp
@@ -102,6 +122,7 @@ fun interp (isInterpreting, en)  =
                  | ValueNotFoundInMatch => (printValueNotFoundInMatch(input); interp (true, en))
                  | HDEmptySeq => (printHDEmptySeq(input); interp (true, en))
                  | TLEmptySeq => (printTLEmptySeq(input); interp (true, en))
+                 | NotAFunc => (printNotAFunc(input); interp (true, en))
         end
     else 0;
 

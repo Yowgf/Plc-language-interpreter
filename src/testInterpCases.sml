@@ -56,6 +56,11 @@ val interpCases =
     in
         (s, e)
     end ::
+    let val s = "([Bool] [])"
+        val e = "[]"
+    in
+        (s, e)
+    end ::
     (* Prim1 operators *)
     let val s = "!false"
         val e = "true"
