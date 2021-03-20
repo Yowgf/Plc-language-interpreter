@@ -9,6 +9,7 @@ use "PlcParser.yacc.sig";
 use "PlcParser.yacc.sml";
 use "PlcLexer.lex.sml";
 use "Parse.sml";
+use "ErrorMessages.sml";
 
 use "PlcChecker.sml";
 
@@ -22,6 +23,11 @@ exception QuitInterp
 fun evalInt (IntV x) = x
 
 fun evalBool (BoolV x) = x
+
+fun listComponents (ListV x) = x
+
+fun evalList ([], evalFn, en) = []
+  | evalList ((h::t), evalFn, en) = (evalFn (h, en))::evalList(t, evalFn, en) 
                            
 fun evalPrim2 (opName, x, y) =
     case opName of
@@ -33,14 +39,27 @@ fun evalPrim2 (opName, x, y) =
       | "!=" => BoolV(evalInt x <> evalInt y)
       | "<" => BoolV(evalInt x < evalInt y)
       | "<=" => BoolV(evalInt x <= evalInt y)
-
-fun evalList ([], evalFn, en) = []
-  | evalList ((h::t), evalFn, en) = (evalFn (h, en))::evalList(t, evalFn, en) 
+      | "::" => ListV(x :: listComponents (y))
                            
 fun evalPrim1 (opName, x) =
     case opName of
         "!" => BoolV(not (evalBool x))
       | "-" => IntV(~ (evalInt x))
+      | "hd" => (case x of
+                    ListV([]) => raise HDEmptySeq
+                  | ListV(l) => hd l
+                  | _ => raise Impossible
+                )
+      | "tl" => (case x of
+                    ListV([]) => raise TLEmptySeq
+                  | ListV(l) => ListV(tl l)
+                  | _ => raise Impossible
+                )
+      | "ise" => (case x of
+                    ListV([]) => BoolV(true)
+                  | ListV(l) => BoolV(false)
+                  | _ => raise Impossible
+                )
 
 fun matchResult (v, [], evalFn, en): expr = raise ValueNotFoundInMatch
   | matchResult (v, (NONE, e)::[], evalFn, en): expr = e
@@ -59,18 +78,12 @@ fun eval (e, en) =
       | Prim2(opName, e1, e2) =>
         (case opName of
              ";" => (eval(e1, en); eval(e2, en))
-           | _ => evalPrim2(opName, eval (e1, en), eval (e2, en)))
+           | _ => evalPrim2(opName, eval (e1, en), eval (e2, en))
+        )
       | If(cond, e1, e2) => if evalBool (eval (cond, en)) then eval (e1, en) else eval (e2, en)
       | Match(e1, alts) => eval (matchResult(eval (e1, en), alts, eval, en), en)
       | List(l) => ListV(evalList(l, eval, en))
-
-fun printInvalidInput input =
-    TextIO.output(TextIO.stdOut, "\nInvalid syntax: \n***\n" ^
-                                 input ^ "***\n\n")
-
-fun printValueNotFoundInMatch input =
-    TextIO.output(TextIO.stdOut, "\nValue not found in match: \n***\n" ^
-                                 input ^ "***\n\n")
+      | Item(pos, l) => List.nth(listComponents(eval (l, en)), pos)
 
 fun parseInput input =
     if input = ":quit\n" then raise QuitInterp
@@ -87,6 +100,8 @@ fun interp (isInterpreting, en)  =
              interp (true, en))
             handle QuitInterp => interp (false, en)
                  | ValueNotFoundInMatch => (printValueNotFoundInMatch(input); interp (true, en))
+                 | HDEmptySeq => (printHDEmptySeq(input); interp (true, en))
+                 | TLEmptySeq => (printTLEmptySeq(input); interp (true, en))
         end
     else 0;
 
