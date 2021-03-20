@@ -5,8 +5,6 @@
 fun test [] = 1
   | test ((code: string, exptRes: string)::casesTail) =
     if (run (parseInput code)) = exptRes
-       handle _ => (print "Uncaught exception while testing!\n";
-                    false)
     then
         test casesTail
     else
@@ -45,8 +43,9 @@ fun testExceptions [] = 1
   | testExceptions ((code, exptExn)::casesTail) =
     (failWith(code, exptExn); testExceptions casesTail)
     handle _ => (printTestError code; 0)
-            
+
 val interpCases =
+    (* Constants *)
     let val s = "0"
         val e = "0"
     in
@@ -54,6 +53,69 @@ val interpCases =
     end ::
     let val s = "true"
         val e = "true"
+    in
+        (s, e)
+    end ::
+    (* Prim1 operators *)
+    let val s = "!false"
+        val e = "true"
+    in
+        (s, e)
+    end ::
+    let val s = "-1"
+        val e = "~1"
+    in
+        (s, e)
+    end ::
+    (* Prim2 operators *)
+    let val s = "true && false"
+        val e = "false"
+    in
+        (s, e)
+    end ::
+    let val s = "true && true"
+        val e = "true"
+    in
+        (s, e)
+    end ::
+    let val s = "5 + 6"
+        val e = "11"
+    in
+        (s, e)
+    end ::
+    let val s = "10 - 5"
+        val e = "5"
+    in
+        (s, e)
+    end ::
+    let val s = "42 * 24"
+        val e = "1008"
+    in
+        (s, e)
+    end ::
+    let val s = "42 / 24"
+        val e = "1"
+    in
+        (s, e)
+    end ::
+    let val s = "0 != 1"
+        val e = "true"
+    in
+        (s, e)
+    end ::
+    let val s = "400 < 400"
+        val e = "false"
+    in
+        (s, e)
+    end ::
+    let val s = "400 <= 400"
+        val e = "true"
+    in
+        (s, e)
+    end ::
+    (* Let, var and functions *)
+    let val s = "var x = 5; x; x"
+        val e = "5"
     in
         (s, e)
     end ::
