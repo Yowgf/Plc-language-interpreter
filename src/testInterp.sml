@@ -8,3 +8,4 @@ use "Plc.sml";
 
 use "testInterpCases.sml";
 test interpCases;
+testExceptions exceptionCases;
