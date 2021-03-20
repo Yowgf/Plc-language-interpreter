@@ -18,14 +18,6 @@ exception TLEmptySeq (* Tail empty sequence *)
 exception ValueNotFoundInMatch
 exception NotAFunc
 exception QuitInterp
-
-(*
-
-@TODO expression "4 4 4" is invalid syntax but does not yield
-      error.
-
-
-*)
               
 fun evalInt (IntV x) = x
 
@@ -41,6 +33,9 @@ fun evalPrim2 (opName, x, y) =
       | "!=" => BoolV(evalInt x <> evalInt y)
       | "<" => BoolV(evalInt x < evalInt y)
       | "<=" => BoolV(evalInt x <= evalInt y)
+
+fun evalList ([], evalFn, en) = []
+  | evalList ((h::t), evalFn, en) = (evalFn (h, en))::evalList(t, evalFn, en) 
                            
 fun evalPrim1 (opName, x) =
     case opName of
@@ -64,6 +59,7 @@ fun eval (e, en) =
       | Prim2(opName, e1, e2) => evalPrim2(opName, eval (e1, en), eval (e2, en))
       | If(cond, e1, e2) => if evalBool (eval (cond, en)) then eval (e1, en) else eval (e2, en)
       | Match(e1, alts) => eval (matchResult(eval (e1, en), alts, eval, en), en)
+      | List(l) => ListV(evalList(l, eval, en))
 
 fun printInvalidInput input =
     TextIO.output(TextIO.stdOut, "\nInvalid syntax: \n***\n" ^
