@@ -7,5 +7,4 @@ use "testParser.sml";
 use "Plc.sml";
 
 use "testInterpCases.sml";
-test interpCases;
-testExceptions exceptionCases;
+testInterpFramework.testAll()
