@@ -129,6 +129,7 @@ fun interp (isInterpreting, en)  =
                  | HDEmptySeq => (printHDEmptySeq(input); interp (true, en))
                  | TLEmptySeq => (printTLEmptySeq(input); interp (true, en))
                  | NotAFunc => (printNotAFunc(input); interp (true, en))
+                 | SymbolNotFound => (printSymbolNotFound(input); interp (true, en))
                  | EmptySeq => (printEmptySeq(input); interp (true, en))
                  | NotEqTypes => (printNotEqTypes(input); interp (true, en))
                  | IfCondNotBool => (printIfCondNotBool(input); interp (true, en))

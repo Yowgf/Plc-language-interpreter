@@ -19,7 +19,7 @@ fun printNotAFunc input =
                                  input ^ "***\n\n")
 
 fun printSymbolNotFound input =
-    TextIO.output(TextIO.stdOut, "\nSymbol not found:\n***\n" ^
+    TextIO.output(TextIO.stdOut, "\nUndeclared variable or function:\n***\n" ^
                                  input ^ "***\n\n")
 
 fun printEmptySeq input =

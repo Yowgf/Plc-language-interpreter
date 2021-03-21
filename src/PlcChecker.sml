@@ -45,7 +45,9 @@ fun listTailType(ListT(t)): plcType = if List.length(t) > 0 then ListT(tl t) els
 
 fun checkTypesMatch(t1: plcType, t2: plcType): plcType = if t1 = t2 then t1 else raise NotEqTypes
 
-(* fun checkTypesListMatch((t1::l1): plcType list, (t2::l2): plcType list): plcType = if t1 = t2 then t1 else raise NotEqTypes *)
+fun checkTypesListMatch([], []) = true
+  | checkTypesListMatch((t1::l1): plcType list, (t2::l2): plcType list) = if t1 = t2 then checkTypesListMatch(l1, l2) else raise NotEqTypes
+  | checkTypesListMatch _ = raise NotEqTypes
 
 fun checkMatchTypes(t: plcType, [], typeFn, en): plcType = raise NoMatchResults
   | checkMatchTypes(t: plcType, (NONE, e)::[], typeFn, en): plcType = typeFn (e, en)
@@ -86,7 +88,7 @@ fun checkPrim2(opName: string, t1: plcType, t2: plcType): plcType =
     | "<=" => if checkIntT(t1) andalso checkIntT(t2) then BoolT else raise CallTypeMisM
     | "::" => if checkIntOrBoolT(t1) andalso checkListT(t2) then ListT(t1::listType(t2)) else raise CallTypeMisM
 
-(* fun checkCallType(FunT(retType, argTypes), fArgs) =  *)
+fun checkCallType(FunT(retType, argTypes), fArgs) = (checkTypesListMatch(listType argTypes, listType fArgs); retType) handle NotEqTypes => raise CallTypeMisM
 
 fun checkType(e: expr, en): plcType =
     case e of
@@ -100,7 +102,7 @@ fun checkType(e: expr, en): plcType =
     | Prim2(opName, e1, e2) => checkPrim2(opName, checkType (e1, en), checkType (e2, en))
     | If(cond, e1, e2) => if checkBoolT(checkType (cond, en)) then checkTypesMatch(checkType (e1, en), checkType (e2, en)) else raise IfCondNotBool
     | Match(cond, alts) => checkMatchTypes(checkType(cond, en), alts, checkType, en)
-    (* | Call(f, fArgs) =>  *)
+    | Call(f, fArgs) => checkCallType(checkType(f, en), checkType(fArgs, en))
     | List(l) => ListT(typesFromList(l, checkType, en))
     | Item(pos, l) => nthType(checkType(l, en), pos)
     | Anon(argTypes, argIndicator, fBody) => FunT(checkType(fBody, en), argTypes)
