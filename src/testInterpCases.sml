@@ -103,6 +103,11 @@ val interpCases =
     in
         (s, e)
     end ::
+    let val s = "0 = 1"
+        val e = "false"
+    in
+        (s, e)
+    end ::
     let val s = "0 != 1"
         val e = "true"
     in
@@ -124,7 +129,21 @@ val interpCases =
     in
         (s, e)
     end ::
-    (* Don't move this last case *)
+    let val s = "fun mul(Int a, Int b) = a * b; mul(mul(5, 5), 5)"
+        val e = "125"
+    in
+        (s, e)
+    end ::
+    let val s = "(fn () => () end)()"
+        val e = "()"
+    in
+        (s, e)
+    end ::
+    let val s = "fun rec sumTo(Int a): Int = if a != 0 then a + sumTo(a - 1) else 0; sumTo(5)"
+        val e = "15"
+    in
+        (s, e)
+    end ::
     let val s = "0"
         val e = "0"
     in
@@ -133,7 +152,6 @@ val interpCases =
 
 val exceptionCases =
     (* Fail with exception tests *)
-    (* Don't move this last case *)
     let val s = "match 0 with | 1 -> 1 end"
         val e = "ValueNotFoundInMatch"
     in
