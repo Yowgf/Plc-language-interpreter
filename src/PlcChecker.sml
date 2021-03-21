@@ -88,8 +88,9 @@ fun checkType(e: expr, en): plcType =
       ConI x => IntT
     | ConB x => BoolT
     | ESeq t => t
-    | Let(name, e1, e2) => (checkType(e1, en); checkType(e2, en))
-    (* | Letrec(name, arg * string * plcType * expr * expr) *)
+    | Var(name) => lookup en name
+    | Let(name, e1, e2) => checkType(e2, (name, checkType(e1, en))::en)
+    (* | Letrec(name, argTypes, argIndicator, retType, fBody, e1) =>  *)
     | Prim1(opName, e1) => checkPrim1 (opName, checkType (e1, en))
     | Prim2(opName, e1, e2) => checkPrim2(opName, checkType (e1, en), checkType (e2, en))
     | If(cond, e1, e2) => if checkBoolT(checkType (cond, en)) then checkTypesMatch(checkType (e1, en), checkType (e2, en)) else raise IfCondNotBool

@@ -81,7 +81,6 @@ fun evalCall (Clos(fName, argIndicator, fBody, fSt), fArgs, evalFun, en) =
   | evalCall _ = raise NotAFunc
 
 fun eval (e, en) =(
-    checkType(e, en);
     case e of
         ConI(x) => IntV(x)
       | ConB(x) => BoolV(x)
@@ -120,8 +119,11 @@ fun interp (isInterpreting, en)  =
             val input = (print "< "; TextIO.input TextIO.stdIn)
             val parserOutput = parseInput input
         in
-            (print ("> " ^ val2string (eval (parserOutput, en)) ^ "\n\n");
-             interp (true, en))
+            ( 
+              checkType(parserOutput, []);
+              print ("> " ^ val2string (eval (parserOutput, en)) ^ "\n\n");
+              interp (true, en)
+            )
             handle QuitInterp => interp (false, en)
                  | ValueNotFoundInMatch => (printValueNotFoundInMatch(input); interp (true, en))
                  | HDEmptySeq => (printHDEmptySeq(input); interp (true, en))
