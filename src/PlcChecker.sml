@@ -45,6 +45,8 @@ fun listTailType(ListT(t)): plcType = if List.length(t) > 0 then ListT(tl t) els
 
 fun checkTypesMatch(t1: plcType, t2: plcType): plcType = if t1 = t2 then t1 else raise NotEqTypes
 
+(* fun checkTypesListMatch((t1::l1): plcType list, (t2::l2): plcType list): plcType = if t1 = t2 then t1 else raise NotEqTypes *)
+
 fun checkMatchTypes(t: plcType, [], typeFn, en): plcType = raise NoMatchResults
   | checkMatchTypes(t: plcType, (NONE, e)::[], typeFn, en): plcType = typeFn (e, en)
   | checkMatchTypes(t: plcType, (SOME(opt), e)::l, typeFn, en): plcType = 
@@ -52,11 +54,12 @@ fun checkMatchTypes(t: plcType, [], typeFn, en): plcType = raise NoMatchResults
         val optT = typeFn (opt, en) (* IntT *)
         val retT = typeFn (e, en) (* BoolT *)
     in (
-        if checkTypesMatch(t, optT) = t
-            then if List.length(l) = 0 orelse retT = checkMatchTypes(t, l, typeFn, en)
+            (
+              checkTypesMatch(t, optT);
+              if List.length(l) = 0 orelse retT = checkMatchTypes(t, l, typeFn, en)
                 then retT
                 else raise MatchResTypeDiff
-            else raise MatchCondTypesDiff
+            ) handle NotEqTypes => raise MatchCondTypesDiff
     ) end
 
 fun typesFromList([], typeFn, en): plcType list = []
@@ -83,6 +86,8 @@ fun checkPrim2(opName: string, t1: plcType, t2: plcType): plcType =
     | "<=" => if checkIntT(t1) andalso checkIntT(t2) then BoolT else raise CallTypeMisM
     | "::" => if checkIntOrBoolT(t1) andalso checkListT(t2) then ListT(t1::listType(t2)) else raise CallTypeMisM
 
+(* fun checkCallType(FunT(retType, argTypes), fArgs) =  *)
+
 fun checkType(e: expr, en): plcType =
     case e of
       ConI x => IntT
@@ -95,6 +100,7 @@ fun checkType(e: expr, en): plcType =
     | Prim2(opName, e1, e2) => checkPrim2(opName, checkType (e1, en), checkType (e2, en))
     | If(cond, e1, e2) => if checkBoolT(checkType (cond, en)) then checkTypesMatch(checkType (e1, en), checkType (e2, en)) else raise IfCondNotBool
     | Match(cond, alts) => checkMatchTypes(checkType(cond, en), alts, checkType, en)
+    (* | Call(f, fArgs) =>  *)
     | List(l) => ListT(typesFromList(l, checkType, en))
     | Item(pos, l) => nthType(checkType(l, en), pos)
-    | Anon(argTypes, argIndicator, fBody) => checkType(fBody, en)
+    | Anon(argTypes, argIndicator, fBody) => FunT(checkType(fBody, en), argTypes)
