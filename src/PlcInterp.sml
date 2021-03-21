@@ -127,8 +127,14 @@ fun interp (isInterpreting, en)  =
                  | HDEmptySeq => (printHDEmptySeq(input); interp (true, en))
                  | TLEmptySeq => (printTLEmptySeq(input); interp (true, en))
                  | NotAFunc => (printNotAFunc(input); interp (true, en))
-                 | CallTypeMisM => (printCallTypeMisM(input); interp (true, en))
+                 | EmptySeq => (printEmptySeq(input); interp (true, en))
+                 | NotEqTypes => (printNotEqTypes(input); interp (true, en))
                  | IfCondNotBool => (printIfCondNotBool(input); interp (true, en))
+                 | NoMatchResults => (printNoMatchResults(input); interp (true, en))
+                 | MatchResTypeDiff => (printMatchResTypeDiff(input); interp (true, en))
+                 | MatchCondTypesDiff => (printMatchCondTypesDiff(input); interp (true, en))
+                 | CallTypeMisM => (printCallTypeMisM(input); interp (true, en))
+                 | ListOutOfRange => (printListOutOfRange(input); interp (true, en))
                  | OpNonList => (printOpNonList(input); interp (true, en))
 
         end

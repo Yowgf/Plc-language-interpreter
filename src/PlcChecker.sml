@@ -37,7 +37,7 @@ fun checkListT(t: plcType): bool =
 
 fun listType(ListT(t)): plcType list = t
 
-fun listHeadType(ListT(t)): plcType = if List.length(t) > 0 then List.nth(t, 0) else raise ListOutOfRange
+fun listHeadType(ListT(t)): plcType = if List.length(t) > 0 then List.nth(t, 0) else raise EmptySeq
 
 fun checkTypesMatch(t1: plcType, t2: plcType): plcType = if t1 = t2 then t1 else raise NotEqTypes
 
