@@ -47,8 +47,9 @@ fun evalPrim1 (opName, x) =
                     ListV([]) => BoolV(true)
                   | ListV(l) => BoolV(false)
                   | _ => raise Impossible
-                )
-                           
+                 )
+      | "print" => (print (val2string x); ListV([]))
+
 fun evalPrim2 (opName, x, y) =
     case opName of
         "&&" => BoolV(evalBool x andalso evalBool y)
@@ -99,7 +100,10 @@ fun eval (e, en) =
       | Call(f, fArgs) => evalCall(eval(f, en), eval(fArgs, en), eval, en)
       | List(l) => ListV(evalList(l, eval, en))
                         
-      | Item(pos, l) => List.nth(listComponents(eval (l, en)), pos - 1)
+      | Item(pos, l) =>
+        (List.nth(listComponents(eval (l, en)), pos - 1)
+         (* According to instructor's recomendations, raise Impossible *)
+         handle Subscript => raise Impossible)
       (* Maybe will bug once type checking is needed *)
       | Anon(argTypes, argIndicator, fBody) => Clos("", argIndicator, fBody, en)
 
@@ -121,6 +125,7 @@ fun interp (isInterpreting, en)  =
                  | HDEmptySeq => (printHDEmptySeq(input); interp (true, en))
                  | TLEmptySeq => (printTLEmptySeq(input); interp (true, en))
                  | NotAFunc => (printNotAFunc(input); interp (true, en))
+
         end
     else 0;
 
