@@ -17,3 +17,7 @@ fun printTLEmptySeq input =
 fun printNotAFunc input =
     TextIO.output(TextIO.stdOut, "\nCall to non-functional entity:\n***\n" ^
                                  input ^ "***\n\n")
+
+fun printSymbolNotFound input =
+    TextIO.output(TextIO.stdOut, "\nSymbol not found:\n***\n" ^
+                                 input ^ "***\n\n")
