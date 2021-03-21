@@ -37,7 +37,11 @@ fun checkListT(t: plcType): bool =
 
 fun listType(ListT(t)): plcType list = t
 
-fun listHeadType(ListT(t)): plcType = if List.length(t) > 0 then List.nth(t, 0) else raise EmptySeq
+fun nthType(ListT(t), pos): plcType = if List.length(t) >= pos then List.nth(t, pos - 1) else raise ListOutOfRange
+
+fun listHeadType(ListT(t)): plcType = if List.length(t) > 0 then hd t else raise EmptySeq
+
+fun listTailType(ListT(t)): plcType = if List.length(t) > 0 then ListT(tl t) else raise EmptySeq
 
 fun checkTypesMatch(t1: plcType, t2: plcType): plcType = if t1 = t2 then t1 else raise NotEqTypes
 
@@ -45,8 +49,8 @@ fun checkMatchTypes(t: plcType, [], typeFn, en): plcType = raise NoMatchResults
   | checkMatchTypes(t: plcType, (NONE, e)::[], typeFn, en): plcType = typeFn (e, en)
   | checkMatchTypes(t: plcType, (SOME(opt), e)::l, typeFn, en): plcType = 
     let 
-        val optT = typeFn (opt, en)
-        val retT = typeFn (e, en) 
+        val optT = typeFn (opt, en) (* IntT *)
+        val retT = typeFn (e, en) (* BoolT *)
     in (
         if checkTypesMatch(t, optT) = t
             then if List.length(l) = 0 orelse retT = checkMatchTypes(t, l, typeFn, en)
@@ -63,7 +67,7 @@ fun checkPrim1(opName: string, t: plcType): plcType =
       "!" => if checkBoolT(t) then BoolT else raise CallTypeMisM
     | "-" => if checkIntT(t) then IntT else raise CallTypeMisM
     | "hd" => if checkListT(t) then listHeadType t else raise OpNonList
-    | "tl" => if checkListT(t) then t else raise OpNonList
+    | "tl" => if checkListT(t) then listTailType t else raise OpNonList
     | "ise" => if checkListT(t) then BoolT else raise OpNonList
 
 fun checkPrim2(opName: string, t1: plcType, t2: plcType): plcType =
@@ -85,8 +89,11 @@ fun checkType(e: expr, en): plcType =
     | ConB x => BoolT
     | ESeq t => t
     | Let(name, e1, e2) => (checkType(e1, en); checkType(e2, en))
+    (* | Letrec(name, arg * string * plcType * expr * expr) *)
     | Prim1(opName, e1) => checkPrim1 (opName, checkType (e1, en))
     | Prim2(opName, e1, e2) => checkPrim2(opName, checkType (e1, en), checkType (e2, en))
     | If(cond, e1, e2) => if checkBoolT(checkType (cond, en)) then checkTypesMatch(checkType (e1, en), checkType (e2, en)) else raise IfCondNotBool
     | Match(cond, alts) => checkMatchTypes(checkType(cond, en), alts, checkType, en)
     | List(l) => ListT(typesFromList(l, checkType, en))
+    | Item(pos, l) => nthType(checkType(l, en), pos)
+    | Anon(argTypes, argIndicator, fBody) => checkType(fBody, en)
