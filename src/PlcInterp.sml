@@ -79,7 +79,8 @@ fun evalCall (Clos(fName, argIndicator, fBody, fSt), fArgs, evalFun, en) =
     evalFun(fBody, (argIndicator, fArgs)::en)
   | evalCall _ = raise NotAFunc
 
-fun eval (e, en) =
+fun eval (e, en) =(
+    checkType(e, en);
     case e of
         ConI(x) => IntV(x)
       | ConB(x) => BoolV(x)
@@ -102,6 +103,7 @@ fun eval (e, en) =
       | Item(pos, l) => List.nth(listComponents(eval (l, en)), pos - 1)
       (* Maybe will bug once type checking is needed *)
       | Anon(argTypes, argIndicator, fBody) => Clos("", argIndicator, fBody, en)
+)
 
 fun parseInput input =
     if input = ":quit\n" then raise QuitInterp
@@ -121,6 +123,9 @@ fun interp (isInterpreting, en)  =
                  | HDEmptySeq => (printHDEmptySeq(input); interp (true, en))
                  | TLEmptySeq => (printTLEmptySeq(input); interp (true, en))
                  | NotAFunc => (printNotAFunc(input); interp (true, en))
+                 | CallTypeMisM => (printCallTypeMisM(input); interp (true, en))
+                 | IfCondNotBool => (printIfCondNotBool(input); interp (true, en))
+                 | OpNonList => (printOpNonList(input); interp (true, en))
         end
     else 0;
 
