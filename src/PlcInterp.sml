@@ -80,7 +80,7 @@ fun evalCall (Clos(fName, argIndicator, fBody, fSt), fArgs, evalFun, en) =
     evalFun(fBody, (argIndicator, fArgs)::en)
   | evalCall _ = raise NotAFunc
 
-fun eval (e, en) =(
+fun eval (e, en) =
     case e of
         ConI(x) => IntV(x)
       | ConB(x) => BoolV(x)
@@ -106,7 +106,6 @@ fun eval (e, en) =(
          handle Subscript => raise Impossible)
       (* Maybe will bug once type checking is needed *)
       | Anon(argTypes, argIndicator, fBody) => Clos("", argIndicator, fBody, en)
-)
 
 fun parseInput input =
     if input = ":quit\n" then raise QuitInterp

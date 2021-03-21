@@ -199,14 +199,70 @@ val interpCases =
         (s, e)
     end :: []
 
+(*
+run (Prim1("hd", ConI 0));
+
+Prim2
+    (";",
+     Anon
+       (ListT [],"$list",
+        Let ("a",Item (1,Var "$list"),Let ("b",Item (2,Var "$list"),List []))),
+     ConI 0) : ?.expr
+*)
+
+(* Fail with exception tests *)
 val exceptionCases =
-    (* Fail with exception tests *)
+    (* Type exceptions *)
+    let val s = "hd ()"
+        val e = "EmptySeq"
+    in
+        (s, e)
+    end ::
+    let val s = "match 1 with | 1 -> 1 | false -> 0 end"
+        val e = "MatchCondTypesDiff"
+    in
+        (s, e)
+    end ::
+    let val s = "match 1 with | 1 -> true | 0 -> 0 end"
+        val e = "MatchResTypeDiff"
+    in
+        (s, e)
+    end ::
+    let val s = "if 1 then true else false"
+        val e = "IfCondNotBool"
+    in
+        (s, e)
+    end ::
+    let val s = "match 1 with end"
+        val e = "NoMatchResults"
+    in
+        (s, e)
+    end ::
+    let val s = "true + false"
+        val e = "CallTypeMisM"
+    in
+        (s, e)
+    end ::
+    let val s = "(10, 20)[3]"
+        val e = "ListOutOfRange"
+    in
+        (s, e)
+    end ::
+    let val s = "hd 9"
+        val e = "OpNonList"
+    in
+        (s, e)  
+    end ::
+    (* Interpreter exceptions *)
+    (* Fix this (needs more elaborate case)
     let val s = "(10, 12, 13)[4]"
         val e = "Impossible"
     in
         (s, e)
     end ::
-    let val s = "hd ()"
+    *)
+    (* Fix these
+    let val s = "hd (tl (1 :: ()))"
         val e = "HDEmptySeq"
     in
         (s, e)
@@ -216,6 +272,7 @@ val exceptionCases =
     in
         (s, e)
     end ::
+     *)
     let val s = "match 0 with | 1 -> 1 end"
         val e = "ValueNotFoundInMatch"
     in

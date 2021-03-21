@@ -88,6 +88,11 @@ fun checkPrim2(opName: string, t1: plcType, t2: plcType): plcType =
 
 (* fun checkCallType(FunT(retType, argTypes), fArgs) =  *)
 
+fun buildArgTypesEnv (Let(varName, _, nextLet), (hT::tT): plcType list, en) =
+    (varName, hT)::buildArgTypesEnv(nextLet, tT, en)
+  | buildArgTypesEnv (Var(varName), (hT::[]), en) = (varName, hT)::en
+  | buildArgTypesEnv (_, _, _) = raise Subscript
+
 fun checkType(e: expr, en): plcType =
     case e of
       ConI x => IntT
@@ -95,7 +100,13 @@ fun checkType(e: expr, en): plcType =
     | ESeq t => t
     | Var(name) => lookup en name
     | Let(name, e1, e2) => checkType(e2, (name, checkType(e1, en))::en)
-    (* | Letrec(name, argTypes, argIndicator, retType, fBody, e1) =>  *)
+    | Letrec(name, argTypes, argIndicator, retType, fBody, e1) =>
+      checkType(e1,
+                (name,
+                 FunT(checkTypesMatch(retType, checkType(fBody, buildArgTypesEnv(argTypes, en)))
+                      handle NotEqTypes => raise WrongRetType,
+                      argTypes))
+                ::en)
     | Prim1(opName, e1) => checkPrim1 (opName, checkType (e1, en))
     | Prim2(opName, e1, e2) => checkPrim2(opName, checkType (e1, en), checkType (e2, en))
     | If(cond, e1, e2) => if checkBoolT(checkType (cond, en)) then checkTypesMatch(checkType (e1, en), checkType (e2, en)) else raise IfCondNotBool
