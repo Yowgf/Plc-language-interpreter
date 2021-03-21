@@ -56,6 +56,7 @@ fun evalPrim2 (opName, x, y) =
       | "-" => IntV(evalInt x - evalInt y)
       | "*" => IntV(evalInt x * evalInt y)
       | "/" => IntV(evalInt x div evalInt y)
+      | "=" => BoolV(evalInt x = evalInt y)
       | "!=" => BoolV(evalInt x <> evalInt y)
       | "<" => BoolV(evalInt x < evalInt y)
       | "<=" => BoolV(evalInt x <= evalInt y)
@@ -73,15 +74,11 @@ Precisamos do corpo da funcao ser avaliado antes de adiciona-lo ao
 ambiente. Ao mesmo tempo, precisamos te-lo no ambiente antes de no
 ambiente antes de avalia-lo.
 *)
-fun evalCall (Clos(fName, argIndicator, fBody, en), fArgs, evalFun) =
-    (* evalFun(fBody, (fName, Clos(IntT, argIndicator, fBody, en))::(argIndicator, fArgs)::en) *)
-    evalFun(fBody, (fName, evalFun(Anon(IntT, argIndicator, fBody), en))::(argIndicator, fArgs)::en)
+fun evalCall (Clos(fName, argIndicator, fBody, fSt), fArgs, evalFun, en) =
+    (* evalFun(fBody, (fName, Clos("", argIndicator, fBody, en))::(argIndicator, fArgs)::en) *)
+    evalFun(fBody, (argIndicator, fArgs)::en)
   | evalCall _ = raise NotAFunc
 
-(* Teste de fun rec
-fun rec foo(Int a): Int = foo(a); foo(5)
-Letrec("foo",IntT,"a",IntT,Call (Var "foo",Var "a"),Call (Var "foo",ConI 5))
-*)                       
 fun eval (e, en) =
     case e of
         ConI(x) => IntV(x)
@@ -99,9 +96,10 @@ fun eval (e, en) =
         )
       | If(cond, e1, e2) => if evalBool (eval (cond, en)) then eval (e1, en) else eval (e2, en)
       | Match(e1, alts) => eval (matchResult(eval (e1, en), alts, eval, en), en)
-      | Call(f, fArgs) => evalCall(eval(f, en), eval(fArgs, en), eval)
+      | Call(f, fArgs) => evalCall(eval(f, en), eval(fArgs, en), eval, en)
       | List(l) => ListV(evalList(l, eval, en))
-      | Item(pos, l) => List.nth(listComponents(eval (l, en)), pos)
+                        
+      | Item(pos, l) => List.nth(listComponents(eval (l, en)), pos - 1)
       (* Maybe will bug once type checking is needed *)
       | Anon(argTypes, argIndicator, fBody) => Clos("", argIndicator, fBody, en)
 
