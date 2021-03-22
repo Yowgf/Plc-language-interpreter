@@ -45,7 +45,7 @@ fun exptFail code =
     | NoMatchResults => "NoMatchResults"
     | MatchResTypeDiff => "MatchResTypeDiff"
     | MatchCondTypesDiff => "MatchCondTypesDiff"
-    | CallTypeMisM => "CallTypeMis"
+    | CallTypeMisM => "CallTypeMisM"
     | NotFunc => "NotFunc"
     | ListOutOfRange => "ListOutOfRange"
     | OpNonList => "OpNonList"
@@ -152,6 +152,36 @@ val interpCases =
     in
         (s, e)
     end ::
+    let val s = "true = true"
+        val e = "true"
+    in
+        (s, e)
+    end ::
+    let val s = "true = false"
+        val e = "false"
+    in
+        (s, e)
+    end ::
+    let val s = "() = ()"
+        val e = "true"
+    in
+        (s, e)
+    end ::
+    let val s = "(2, 3) = (4, 6)"
+        val e = "false"
+    in
+        (s, e)
+    end ::
+    let val s = "(2, 3) = (2, 3)"
+        val e = "true"
+    in
+        (s, e)
+    end ::
+    let val s = "(Int []) = (Int [])"
+        val e = "true"
+    in
+        (s, e)
+    end ::
     let val s = "0 != 1"
         val e = "true"
     in
@@ -218,13 +248,18 @@ val exceptionCases =
     in
         (s, e)
     end ::
-    let val s = "match 1 with | 1 -> 1 | false -> 0 end"
-        val e = "MatchCondTypesDiff"
+    let val s = "tl ()"
+        val e = "EmptySeq"
     in
         (s, e)
     end ::
-    let val s = "match 1 with | 1 -> true | 0 -> 0 end"
-        val e = "MatchResTypeDiff"
+    let val s = "fun rec f(Int a): Bool = if a < 1 then a else a - 1; f(5)"
+        val e = "WrongRetType"
+    in
+        (s, e)
+    end ::
+    let val s = "if 4 < 5 then 1 else false"
+        val e = "DiffBrTypes"
     in
         (s, e)
     end ::
@@ -238,8 +273,53 @@ val exceptionCases =
     in
         (s, e)
     end ::
+    let val s = "match 1 with | 1 -> true | 0 -> 0 end"
+        val e = "MatchResTypeDiff"
+    in
+        (s, e)
+    end ::
+    let val s = "match 1 with | 1 -> 1 | false -> 0 end"
+        val e = "MatchCondTypesDiff"
+    in
+        (s, e)
+    end ::
     let val s = "true + false"
         val e = "CallTypeMisM"
+    in
+        (s, e)
+    end ::
+    let val s = "fun f(Int a) = a + 1; f(true)"
+        val e = "CallTypeMisM"
+    in
+        (s, e)
+    end ::
+    let val s = "(fn(Bool b) => if b then 1 else 0 end)()"
+        val e = "CallTypeMisM"
+    in
+        (s, e)
+    end ::
+    let val s = "fun f(((Int, Int) -> Bool) cmpFn, Int a, Int b) = cmpFn(a, b); fun cmp(Int a, Int b) = a - b; f(cmp, 4, 9)"
+        val e = "CallTypeMisM"
+    in
+        (s, e)
+    end ::
+    let val s = "(Int []) = (Bool [])"
+        val e = "CallTypeMisM"
+    in
+        (s, e)
+    end ::
+    let val s = "2 = true"
+        val e = "CallTypeMisM"
+    in
+        (s, e)
+    end ::
+    let val s = "(2, 4) = (6, 4, 9)"
+        val e = "CallTypeMisM"
+    in
+        (s, e)
+    end ::
+    let val s = "7()"
+        val e = "NotFunc"
     in
         (s, e)
     end ::
@@ -254,32 +334,9 @@ val exceptionCases =
         (s, e)  
     end ::
     (* Interpreter exceptions *)
-    (* Fix this (needs more elaborate case)
-    let val s = "(10, 12, 13)[4]"
-        val e = "Impossible"
-    in
-        (s, e)
-    end ::
-    *)
-    (* Fix these
-    let val s = "hd (tl (1 :: ()))"
-        val e = "HDEmptySeq"
-    in
-        (s, e)
-    end ::
-    let val s = "tl ()"
-        val e = "TLEmptySeq"
-    in
-        (s, e)
-    end ::
-     *)
+   
     let val s = "match 0 with | 1 -> 1 end"
         val e = "ValueNotFoundInMatch"
-    in
-        (s, e)
-    end ::
-    let val s = "7()"
-        val e = "NotAFunc"
     in
         (s, e)
     end :: []

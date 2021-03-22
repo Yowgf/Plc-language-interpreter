@@ -1,3 +1,7 @@
+fun printImpossible input =
+    TextIO.output(TextIO.stdOut, "\nInvalid input: \n***\n" ^
+                                 input ^ "\n***\n\n")
+
 fun printInvalidInput input =
     TextIO.output(TextIO.stdOut, "\nInvalid syntax: \n***\n" ^
                                  input ^ "\n***\n\n")
@@ -14,6 +18,10 @@ fun printTLEmptySeq input =
     TextIO.output(TextIO.stdOut, "\nEmpty sequence provided to tl operator: \n***\n" ^
                                  input ^ "\n***\n\n")
 
+fun printUnknownType input =
+    TextIO.output(TextIO.stdOut, "\nUnknown type: \n***\n" ^
+                                 input ^ "\n***\n\n")
+
 fun printNotAFunc input =
     TextIO.output(TextIO.stdOut, "\nCall to non-functional entity:\n***\n" ^
                                  input ^ "***\n\n")
@@ -28,6 +36,14 @@ fun printEmptySeq input =
 
 fun printNotEqTypes input =
     TextIO.output(TextIO.stdOut, "\nOperand types not equal:\n***\n" ^
+                                 input ^ "***\n\n")
+
+fun printWrongRetType input =
+    TextIO.output(TextIO.stdOut, "\nWrong return type:\n***\n" ^
+                                 input ^ "***\n\n")
+
+fun printDiffBrTypes input =
+    TextIO.output(TextIO.stdOut, "\nBranches have different types:\n***\n" ^
                                  input ^ "***\n\n")
 
 fun printIfCondNotBool input =
@@ -48,6 +64,10 @@ fun printMatchCondTypesDiff input =
 
 fun printCallTypeMisM input =
     TextIO.output(TextIO.stdOut, "\nCall types mismatch:\n***\n" ^
+                                 input ^ "***\n\n")
+
+fun printNotFunc input =
+    TextIO.output(TextIO.stdOut, "\nCall to non-function entity:\n***\n" ^
                                  input ^ "***\n\n")
 
 fun printListOutOfRange input =

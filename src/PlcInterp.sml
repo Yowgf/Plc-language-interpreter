@@ -13,21 +13,32 @@ use "ErrorMessages.sml";
 
 use "PlcChecker.sml";
 
+exception QuitInterp
 exception Impossible (* Nothing worked! *)
 exception HDEmptySeq (* Head empty sequence *)
 exception TLEmptySeq (* Tail empty sequence *)
 exception ValueNotFoundInMatch
 exception NotAFunc
-exception QuitInterp
               
 fun evalInt (IntV x) = x
+  | evalInt _ = raise Impossible
 
 fun evalBool (BoolV x) = x
+  | evalBool _ = raise Impossible
 
 fun listComponents (ListV x) = x
+  | listComponents _ = raise Impossible
 
 fun evalList ([], evalFn, en) = []
   | evalList ((h::t), evalFn, en) = (evalFn (h, en))::evalList(t, evalFn, en)
+
+fun compare (IntV v1, IntV v2) = v1 = v2
+  | compare (BoolV v1, BoolV v2) = v1 = v2
+  | compare (ListV (v1::l1), ListV (v2::l2)) = compare(v1, v2) andalso compare(ListV(l1), ListV(l2))
+  | compare (ListV ([]), ListV ([])) = true
+  | compare (SeqV (v1::l1), SeqV (v2::l2)) = compare(v1, v2) andalso compare(SeqV(l1), SeqV(l2))
+  | compare (SeqV ([]), SeqV ([])) = true
+  | compare _ = false
 
 fun evalPrim1 (opName, x) =
     case opName of
@@ -49,6 +60,7 @@ fun evalPrim1 (opName, x) =
                   | _ => raise Impossible
                  )
       | "print" => (print (val2string x); ListV([]))
+      | _ => raise Impossible
 
 fun evalPrim2 (opName, x, y) =
     case opName of
@@ -57,26 +69,24 @@ fun evalPrim2 (opName, x, y) =
       | "-" => IntV(evalInt x - evalInt y)
       | "*" => IntV(evalInt x * evalInt y)
       | "/" => IntV(evalInt x div evalInt y)
-      | "=" => BoolV(evalInt x = evalInt y)
-      | "!=" => BoolV(evalInt x <> evalInt y)
+      | "=" => BoolV(compare(x, y))
+      | "!=" => BoolV(not (compare(x, y)))
       | "<" => BoolV(evalInt x < evalInt y)
       | "<=" => BoolV(evalInt x <= evalInt y)
       | "::" => ListV(x :: listComponents (y))
+      | _ => raise Impossible
 
 fun matchResult (v, [], evalFn, en): expr = raise ValueNotFoundInMatch
   | matchResult (v, (NONE, e)::[], evalFn, en): expr = e
-  | matchResult (v, (SOME(e1), e2)::l, evalFn, en): expr =
-    case v of
-        IntV(x) => if x = evalInt (evalFn (e1, en)) then e2 else matchResult(v, l, evalFn, en)
-      | BoolV(x) => if x = evalBool (evalFn (e1, en)) then e2 else matchResult(v, l, evalFn, en)
+  | matchResult (v, (SOME(e1), e2)::l, evalFn, en): expr = (
+      case v of
+          IntV(x) => if x = evalInt (evalFn (e1, en)) then e2 else matchResult(v, l, evalFn, en)
+        | BoolV(x) => if x = evalBool (evalFn (e1, en)) then e2 else matchResult(v, l, evalFn, en)
+        | _ => raise Impossible
+    )
+  | matchResult _ = raise Impossible
 
-(*
-Precisamos do corpo da funcao ser avaliado antes de adiciona-lo ao
-ambiente. Ao mesmo tempo, precisamos te-lo no ambiente antes de no
-ambiente antes de avalia-lo.
-*)
-fun evalCall (Clos(fName, argIndicator, fBody, fSt), fArgs, evalFun, en) =
-    (* evalFun(fBody, (fName, Clos("", argIndicator, fBody, en))::(argIndicator, fArgs)::en) *)
+fun evalCall (Clos(_, argIndicator, fBody, _), fArgs, evalFun, en) =
     evalFun(fBody, (argIndicator, fArgs)::en)
   | evalCall _ = raise NotAFunc
 
@@ -124,18 +134,23 @@ fun interp (isInterpreting, en)  =
               interp (true, en)
             )
             handle QuitInterp => interp (false, en)
+                 | Impossible => (printImpossible(input); interp (true, en))
                  | ValueNotFoundInMatch => (printValueNotFoundInMatch(input); interp (true, en))
                  | HDEmptySeq => (printHDEmptySeq(input); interp (true, en))
                  | TLEmptySeq => (printTLEmptySeq(input); interp (true, en))
                  | NotAFunc => (printNotAFunc(input); interp (true, en))
                  | SymbolNotFound => (printSymbolNotFound(input); interp (true, en))
                  | EmptySeq => (printEmptySeq(input); interp (true, en))
+                 | UnknownType => (printUnknownType(input); interp (true, en))
                  | NotEqTypes => (printNotEqTypes(input); interp (true, en))
+                 | WrongRetType => (printWrongRetType(input); interp (true, en))
+                 | DiffBrTypes => (printDiffBrTypes(input); interp (true, en))
                  | IfCondNotBool => (printIfCondNotBool(input); interp (true, en))
                  | NoMatchResults => (printNoMatchResults(input); interp (true, en))
                  | MatchResTypeDiff => (printMatchResTypeDiff(input); interp (true, en))
                  | MatchCondTypesDiff => (printMatchCondTypesDiff(input); interp (true, en))
                  | CallTypeMisM => (printCallTypeMisM(input); interp (true, en))
+                 | NotFunc => (printNotFunc(input); interp (true, en))
                  | ListOutOfRange => (printListOutOfRange(input); interp (true, en))
                  | OpNonList => (printOpNonList(input); interp (true, en))
 

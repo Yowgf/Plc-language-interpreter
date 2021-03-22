@@ -40,13 +40,22 @@ fun checkFunT(t: plcType): bool =
       FunT x => true
     | _ => false
 
+fun checkComparable(t: plcType): bool =
+    case t of
+      FunT _ => false
+    | _ => true
+
 fun listType(ListT(t)): plcType list = t
+  | listType _ = raise UnknownType
 
 fun nthType(ListT(t), pos): plcType = if List.length(t) >= pos then List.nth(t, pos - 1) else raise ListOutOfRange
+  | nthType _ = raise UnknownType
 
 fun listHeadType(ListT(t)): plcType = if List.length(t) > 0 then hd t else raise EmptySeq
+  | listHeadType _ = raise UnknownType
 
 fun listTailType(ListT(t)): plcType = if List.length(t) > 0 then ListT(tl t) else raise EmptySeq
+  | listTailType _ = raise UnknownType
 
 fun checkTypesListMatch([], [], _) = true
   | checkTypesListMatch((t1::l1), (t2::l2), compareFn) = (compareFn(t1, t2); checkTypesListMatch(l1, l2, compareFn))
@@ -73,6 +82,7 @@ fun checkMatchTypes(t: plcType, [], teval, en): plcType = raise NoMatchResults
                 else raise MatchResTypeDiff
             ) handle NotEqTypes => raise MatchCondTypesDiff
     ) end
+  | checkMatchTypes _ = raise UnknownType
 
 fun typesFromList([], teval, en): plcType list = []
   | typesFromList((e::l): expr list, teval, en): plcType list = teval(e, en)::typesFromList(l, teval, en)
@@ -85,6 +95,7 @@ fun checkPrim1(opName: string, t: plcType): plcType =
     | "tl" => if checkListT(t) then listTailType t else raise OpNonList
     | "ise" => if checkListT(t) then BoolT else raise OpNonList
     | "print" => ListT([])
+    | _ => raise UnknownType
 
 fun checkPrim2(opName: string, t1: plcType, t2: plcType): plcType =
     case opName of
@@ -93,21 +104,32 @@ fun checkPrim2(opName: string, t1: plcType, t2: plcType): plcType =
     | "-" => if checkIntT(t1) andalso checkIntT(t2) then IntT else raise CallTypeMisM
     | "*" => if checkIntT(t1) andalso checkIntT(t2) then IntT else raise CallTypeMisM
     | "/" => if checkIntT(t1) andalso checkIntT(t2) then IntT else raise CallTypeMisM
-    | "=" => if checkIntT(t1) andalso checkIntT(t2) then BoolT else raise CallTypeMisM
-    | "!=" => if checkIntT(t1) andalso checkIntT(t2) then BoolT else raise CallTypeMisM
+    | "=" =>  if checkComparable(t1) andalso checkComparable(t2) 
+                then (checkTypesMatch(t1, t2); BoolT) handle NotEqTypes => raise CallTypeMisM
+                else raise CallTypeMisM
+    | "!=" => if checkComparable(t1) andalso checkComparable(t2) 
+                then (checkTypesMatch(t1, t2); BoolT) handle NotEqTypes => raise CallTypeMisM
+                else raise CallTypeMisM
     | "<" => if checkIntT(t1) andalso checkIntT(t2) then BoolT else raise CallTypeMisM
     | "<=" => if checkIntT(t1) andalso checkIntT(t2) then BoolT else raise CallTypeMisM
     | "::" => if checkIntOrBoolT(t1) andalso checkListT(t2) then ListT(t1::listType(t2)) else raise CallTypeMisM
     | ";" => t2
+    | _ => raise UnknownType
 
-fun checkCallType(FunT(argTypes, retType), fArgs) = 
-  case argTypes of
-    ListT(t) => (
-      (checkTypesListMatch(t, listType fArgs, checkTypesMatch); retType) 
-        handle NotEqTypes => raise CallTypeMisM
-             | _ => raise UnknownType
+fun checkCallType(FunT(argTypes, retType), fArgs) = (
+      case argTypes of
+        ListT(t) => (
+          (checkTypesListMatch(t, listType fArgs, checkTypesMatch); retType) 
+            handle NotEqTypes => raise CallTypeMisM
+                | _ => raise UnknownType
+        )
+      | _ => (
+        (checkTypesMatch(argTypes, fArgs); retType) 
+          handle NotEqTypes => raise CallTypeMisM
+        | _ => raise UnknownType
+      )
     )
-  | _ => (checkTypesMatch(argTypes, fArgs); retType) handle NotEqTypes => raise CallTypeMisM
+  | checkCallType _ = raise UnknownType
 
 fun checkRecFun(name, argTypes, argIndicator, retType, fBody, teval, en) = 
   FunT(argTypes, checkTypesMatch(retType, teval(fBody, (name, FunT(argTypes, retType))::(argIndicator, argTypes)::en)) handle NotEqTypes => raise WrongRetType)
@@ -122,7 +144,10 @@ fun teval(e: expr, en): plcType =
     | Letrec(name, argTypes, argIndicator, retType, fBody, e1) => teval(e1, (name, checkRecFun(name, argTypes, argIndicator, retType, fBody, teval, en))::en)
     | Prim1(opName, e1) => checkPrim1 (opName, teval (e1, en))
     | Prim2(opName, e1, e2) => checkPrim2(opName, teval (e1, en), teval (e2, en))
-    | If(cond, e1, e2) => if checkBoolT(teval (cond, en)) then checkTypesMatch(teval (e1, en), teval (e2, en)) else raise IfCondNotBool
+    | If(cond, e1, e2) => 
+        if checkBoolT(teval (cond, en)) 
+          then (checkTypesMatch(teval (e1, en), teval (e2, en))) handle NotEqTypes => raise DiffBrTypes
+          else raise IfCondNotBool
     | Match(cond, alts) => checkMatchTypes(teval(cond, en), alts, teval, en)
     | Call(f, fArgs) => let
         val fnType = teval(f, en) 
