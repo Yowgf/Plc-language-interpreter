@@ -119,7 +119,7 @@ fun interp (isInterpreting, en)  =
             val parserOutput = parseInput input
         in
             ( 
-              checkType(parserOutput, []);
+              teval(parserOutput, []);
               print ("> " ^ val2string (eval (parserOutput, en)) ^ "\n\n");
               interp (true, en)
             )

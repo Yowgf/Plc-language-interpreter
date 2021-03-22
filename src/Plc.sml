@@ -5,7 +5,7 @@ use "PlcInterp.sml";
 val en: plcVal env = [];
 
 fun run(e: expr) =
-    (checkType(e, []);
+    (teval(e, []);
     let
         val evalResult = val2string (eval (e, en))
     in
