@@ -1,4 +1,15 @@
 #!/bin/bash
 
-cd ./src
-sml start.sml ../$1
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+pushd $DIR > /dev/null
+pushd src/ > /dev/null
+
+if [ $# -ge 2 ]; then
+    sml start.sml ../$1
+else
+    sml start.sml
+fi
+
+popd > /dev/null
+popd > /dev/null

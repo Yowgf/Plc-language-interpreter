@@ -1,2 +1,4 @@
+cd /D "%~dp0"
 cd ./src
-sml start.sml ../%1
+
+if defined %%1 (sml start.sml ../%1) else sml start.sml
