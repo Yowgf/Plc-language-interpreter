@@ -1,12 +1,13 @@
 #!/bin/bash
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+CURRENT_DIR=$PWD
+SRC_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-pushd $DIR > /dev/null
+pushd $SRC_DIR > /dev/null
 pushd src/ > /dev/null
 
-if [ $# -ge 2 ]; then
-    sml start.sml ../$1
+if [ $# -ge 1 ]; then
+    sml start.sml $CURRENT_DIR/$1
 else
     sml start.sml
 fi

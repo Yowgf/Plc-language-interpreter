@@ -1,4 +1,12 @@
-cd /D "%~dp0"
-cd ./src
+SET cur_dir=%CD%
+SET input_file=%1
 
-if defined %%1 (sml start.sml ../%1) else sml start.sml
+CD /D "%~dp0"
+CD ./src
+
+IF DEFINED input_file (
+    sml start.sml %cur_dir%/%input_file%
+) 
+ELSE (
+    sml start.sml
+)
