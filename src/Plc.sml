@@ -1,6 +1,7 @@
 (* Plc interpreter main file *)
 
 use "PlcInterp.sml";
+use "Parse.sml";
 
 exception TypeError
 
@@ -31,5 +32,9 @@ fun run(e: expr) =
             | SymbolNotFound => (printSymbolNotFound("Runtime error"); "Error evaluating expression\n")
     in
         (print ("> " ^ evalResult ^ "\n");
-         evalResult)
+        evalResult)
     end) handle TypeError => "Type error"
+
+fun runFile(file: string) = run(PlcFrontEnd.fromFile(file))
+
+fun runCli() = startInterp();
