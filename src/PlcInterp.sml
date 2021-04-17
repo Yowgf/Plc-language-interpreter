@@ -59,7 +59,7 @@ fun evalPrim1 (opName, x) =
                   | ListV(l) => BoolV(false)
                   | _ => raise Impossible
                  )
-      | "print" => (print (val2string x); ListV([]))
+      | "print" => (print ((val2string x) ^ "\n"); ListV([]))
       | _ => raise Impossible
 
 fun evalPrim2 (opName, x, y) =
@@ -72,7 +72,9 @@ fun evalPrim2 (opName, x, y) =
       | "=" => BoolV(compare(x, y))
       | "!=" => BoolV(not (compare(x, y)))
       | "<" => BoolV(evalInt x < evalInt y)
+      | ">" => BoolV(evalInt x > evalInt y)
       | "<=" => BoolV(evalInt x <= evalInt y)
+      | ">=" => BoolV(evalInt x >= evalInt y)
       | "::" => ListV(x :: listComponents (y))
       | _ => raise Impossible
 

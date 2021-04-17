@@ -53,7 +53,9 @@
     | DIV
     | NEQ
     | LT
+    | GT
     | LEQ
+    | GEQ
     | CAT
 
     (* Declaration stuff *)
@@ -109,7 +111,7 @@
 %nonassoc ELSE
 %left AND
 %left EQ NEQ
-%left LT LEQ
+%left LT GT LEQ GEQ
 %right CAT
 %left PLUS MINUS
 %left MUL DIV
@@ -206,7 +208,9 @@ PrimB:
      | Expr EQ Expr (Prim2("=", Expr1, Expr2))
      | Expr NEQ Expr (Prim2("!=", Expr1, Expr2))
      | Expr LT Expr (Prim2("<", Expr1, Expr2))
+     | Expr GT Expr (Prim2(">", Expr1, Expr2))
      | Expr LEQ Expr (Prim2("<=", Expr1, Expr2))
+     | Expr GEQ Expr (Prim2(">=", Expr1, Expr2))
      | Expr CAT Expr (Prim2("::", Expr1, Expr2))
      | Expr SEMICOLON Expr (Prim2(";", Expr1, Expr2))
 

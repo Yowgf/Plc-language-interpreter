@@ -111,7 +111,9 @@ fun checkPrim2(opName: string, t1: plcType, t2: plcType): plcType =
                 then (checkTypesMatch(t1, t2); BoolT) handle NotEqTypes => raise CallTypeMisM
                 else raise CallTypeMisM
     | "<" => if checkIntT(t1) andalso checkIntT(t2) then BoolT else raise CallTypeMisM
+    | ">" => if checkIntT(t1) andalso checkIntT(t2) then BoolT else raise CallTypeMisM
     | "<=" => if checkIntT(t1) andalso checkIntT(t2) then BoolT else raise CallTypeMisM
+    | ">=" => if checkIntT(t1) andalso checkIntT(t2) then BoolT else raise CallTypeMisM
     | "::" => if checkIntOrBoolT(t1) andalso checkListT(t2) then ListT(t1::listType(t2)) else raise CallTypeMisM
     | ";" => t2
     | _ => raise UnknownType
