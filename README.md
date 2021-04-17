@@ -4,7 +4,7 @@ Plc is a simple ML-like functional language, that supports basic arithmetic and 
 
 ### Try it out
 
-Plc is built on top of SML. To run its interpreter, you need to have an SML interpreter installed in your machine. Once that is done, just run the bat or shell script "plc" (make sure you either are in the root directory or that you have it on your PATH), as in:
+Plc is built on top of SML. To run its interpreter, you need to have an SML interpreter installed in your machine. Once that is done, just run the bat or shell script "plc" (make sure that either you are in the root directory of the project or that you have it in your PATH), as in:
 
 <pre><code>$ plc</pre></code>
 
