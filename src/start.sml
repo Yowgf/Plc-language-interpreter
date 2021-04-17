@@ -1,11 +1,11 @@
-Control.Print.printDepth := 0;
+Control.Print.printDepth := 1;
 Control.Print.out := {
     say=fn _=>(),
     flush=fn()=>()
 };
 
-CM.make("$/basis.cm");
-CM.make("$/ml-yacc-lib.cm");
+val _ = CM.make("$/basis.cm");
+val _ = CM.make("$/ml-yacc-lib.cm");
 
 val _ = use "Plc.sml";
 val _ = use "PlcInterp.sml";
