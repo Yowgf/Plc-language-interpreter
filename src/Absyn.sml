@@ -3,6 +3,7 @@
 datatype plcType =
    IntT
   | BoolT
+  | StringT
   | FunT of plcType * plcType
   | ListT of plcType list
   | SeqT of plcType;
@@ -10,6 +11,7 @@ datatype plcType =
 datatype expr =
    ConI of int
   | ConB of bool
+  | ConS of string
   | ESeq of plcType
   | Var of string
   | Let of string * expr * expr
@@ -27,6 +29,7 @@ datatype expr =
 datatype plcVal =
    BoolV of bool
   | IntV of int
+  | StringV of string
   | ListV of plcVal list
   | SeqV of plcVal list
   | Clos of string * string * expr * plcVal env;
@@ -42,6 +45,7 @@ fun type2string t =
   case t of
       BoolT => "Bool"
     | IntT => "Int"
+    | StringT => "String"
     | ListT [] => "Nil"
     | ListT ts => "(" ^ list2string (type2string, ts) ^ ")"
     | SeqT t1 => "[" ^ type2string t1 ^ "]"
@@ -55,6 +59,7 @@ fun val2string v =
   case v of
       BoolV true => "true"
     | BoolV false => "false"
+    | StringV s => s
     | IntV n => Int.toString n
     | ListV vs => "(" ^ list2string (val2string, vs) ^ ")"
     | SeqV vs => "[" ^ list2string (val2string, vs) ^ "]"

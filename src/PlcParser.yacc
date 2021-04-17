@@ -9,8 +9,10 @@
       INT of int
     | TRUE of bool
     | FALSE of bool
+    | STRING of string
     | INTT of plcType
     | BOOLT of plcType
+    | STRINGT of plcType
     | NILT of plcType
 
     (* Conditionals *)
@@ -223,6 +225,7 @@ Const:
        INT (ConI(INT))
      | TRUE (ConB(TRUE))
      | FALSE (ConB(FALSE))
+     | STRING (ConS(STRING))
      | LPAREN RPAREN (List([]))
      | LPAREN Type LBRAC RBRAC RPAREN (ESeq(Type))
 
@@ -244,6 +247,7 @@ Type:
 Atomic_type:
              INTT (IntT)
            | BOOLT (BoolT)
+           | STRINGT (StringT)
            | NILT (ListT([]))
            | LPAREN Type RPAREN (Type)
 

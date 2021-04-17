@@ -41,6 +41,9 @@ ws  = [\ \t]+;
 br  = [\n\r];
 nat = [0-9]+;
 name = [a-zA-Z_][a-zA-Z0-9_]*;
+simpleQuotes = "'";
+doubleQuotes = "\"";
+string = ({simpleQuotes} [^"\""]* {simpleQuotes} | {doubleQuotes} [^"\""]* {doubleQuotes});
 comment = "(*"[^"*)"]*"*)";
 
 %%
@@ -48,11 +51,15 @@ comment = "(*"[^"*)"]*"*)";
 {ws} => (lex());
 {br} => (lineNumber := !lineNumber + 1; lex());
 {comment} => (lex());
+
 {nat} => (integer(yytext, yypos));
 "true" => (TRUE(true, yypos, yypos));
 "false" => (FALSE(false, yypos, yypos));
+{string} => (STRING(yytext, yypos, yypos));
+
 "Int" => (INTT(IntT, yypos, yypos));
 "Bool" => (BOOLT(BoolT, yypos, yypos));
+"String" => (STRINGT(StringT, yypos, yypos));
 "Nil" => (NILT(ListT([]), yypos, yypos));
 
 "if" => (IF(yypos, yypos));
