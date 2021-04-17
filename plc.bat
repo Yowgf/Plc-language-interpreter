@@ -4,9 +4,8 @@ SET input_file=%1
 CD /D "%~dp0"
 CD ./src
 
-IF DEFINED input_file (
+if defined input_file (
     sml start.sml %cur_dir%/%input_file%
-) 
-ELSE (
+) else (
     sml start.sml
 )
