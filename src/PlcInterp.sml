@@ -65,6 +65,7 @@ fun evalPrim1 (opName, x) =
 fun evalPrim2 (opName, x, y) =
     case opName of
         "&&" => BoolV(evalBool x andalso evalBool y)
+      | "||" => BoolV(evalBool x orelse evalBool y)
       | "+" => IntV(evalInt x + evalInt y)
       | "-" => IntV(evalInt x - evalInt y)
       | "*" => IntV(evalInt x * evalInt y)

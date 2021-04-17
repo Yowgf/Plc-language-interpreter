@@ -100,6 +100,7 @@ fun checkPrim1(opName: string, t: plcType): plcType =
 fun checkPrim2(opName: string, t1: plcType, t2: plcType): plcType =
     case opName of
       "&&" => if checkBoolT(t1) andalso checkBoolT(t2) then BoolT else raise CallTypeMisM
+    | "||" => if checkBoolT(t1) andalso checkBoolT(t2) then BoolT else raise CallTypeMisM
     | "+" => if checkIntT(t1) andalso checkIntT(t2) then IntT else raise CallTypeMisM
     | "-" => if checkIntT(t1) andalso checkIntT(t2) then IntT else raise CallTypeMisM
     | "*" => if checkIntT(t1) andalso checkIntT(t2) then IntT else raise CallTypeMisM

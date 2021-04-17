@@ -85,6 +85,7 @@ comment = "(*"[^"*)"]*"*)";
 "print" => (PRINT(yypos, yypos));
 
 "&&" => (AND(yypos, yypos));
+"||" => (OR(yypos, yypos));
 "+" => (PLUS(yypos, yypos));
 "*" => (MUL(yypos, yypos));
 "/" => (DIV(yypos, yypos));
