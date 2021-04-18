@@ -20,6 +20,14 @@ fun getLineAsString() =
         Int.toString lineNum
     end
 
+(* Remove quotes from string *)
+fun formatString(str) =
+    let
+        val len = (size str) - 2
+    in
+        String.extract(str, 1, SOME len)
+    end
+
 (* Define what to do when the end of the file is reached. *)
 fun eof () = Tokens.EOF(0,0)
 
@@ -55,7 +63,7 @@ comment = "(*"[^"*)"]*"*)";
 {nat} => (integer(yytext, yypos));
 "true" => (TRUE(true, yypos, yypos));
 "false" => (FALSE(false, yypos, yypos));
-{string} => (STRING(yytext, yypos, yypos));
+{string} => (STRING(formatString(yytext), yypos, yypos));
 
 "Int" => (INTT(IntT, yypos, yypos));
 "Bool" => (BOOLT(BoolT, yypos, yypos));
