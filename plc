@@ -1,0 +1,16 @@
+#!/bin/bash
+
+CURRENT_DIR=$PWD
+SRC_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+pushd $SRC_DIR > /dev/null
+pushd src/ > /dev/null
+
+if [ $# -ge 1 ]; then
+    sml start.sml $CURRENT_DIR/$1
+else
+    sml start.sml
+fi
+
+popd > /dev/null
+popd > /dev/null

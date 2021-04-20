@@ -48,12 +48,15 @@
 
     (* Binary Operators *)
     | AND
+    | OR
     | PLUS
     | MUL
     | DIV
     | NEQ
     | LT
+    | GT
     | LEQ
+    | GEQ
     | CAT
 
     (* Declaration stuff *)
@@ -107,9 +110,10 @@
 %right SEMICOLON GOESTO
 %nonassoc IF
 %nonassoc ELSE
+%left OR
 %left AND
 %left EQ NEQ
-%left LT LEQ
+%left LT GT LEQ GEQ
 %right CAT
 %left PLUS MINUS
 %left MUL DIV
@@ -199,6 +203,7 @@ PrimU:
 
 PrimB:
        Expr AND Expr (Prim2("&&", Expr1, Expr2))
+     | Expr OR Expr (Prim2("||", Expr1, Expr2))
      | Expr PLUS Expr (Prim2("+", Expr1, Expr2))
      | Expr MINUS Expr (Prim2("-", Expr1, Expr2))
      | Expr MUL Expr (Prim2("*", Expr1, Expr2))
@@ -206,7 +211,9 @@ PrimB:
      | Expr EQ Expr (Prim2("=", Expr1, Expr2))
      | Expr NEQ Expr (Prim2("!=", Expr1, Expr2))
      | Expr LT Expr (Prim2("<", Expr1, Expr2))
+     | Expr GT Expr (Prim2(">", Expr1, Expr2))
      | Expr LEQ Expr (Prim2("<=", Expr1, Expr2))
+     | Expr GEQ Expr (Prim2(">=", Expr1, Expr2))
      | Expr CAT Expr (Prim2("::", Expr1, Expr2))
      | Expr SEMICOLON Expr (Prim2(";", Expr1, Expr2))
 
