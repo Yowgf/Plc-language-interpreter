@@ -1,0 +1,26 @@
+fun identity(Int a) = a;
+var arr = (1, 2, 3);
+
+print "Unary operators:";
+print (-2);
+print (!true);
+print (hd arr);
+print (tl arr);
+print (ise arr);
+print (ise ());
+print (ise tl (tl (tl arr)));
+
+print "";
+print "Binary operators:";
+print (2 + 2);
+print (4 * 3);
+print (8 + 8 * 5);
+print ((8 + 8) * 5);
+print (8 > 3);
+print (8 > 8);
+print (8 >= 8);
+print (true && false);
+print (true || false);
+print (!true || false);
+print (8 > 3 && false);
+print (8 > 3 || 8 > 8)
