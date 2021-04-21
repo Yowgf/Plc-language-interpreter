@@ -1,0 +1,46 @@
+(* Prints the minimum between a and b *)
+fun compare(Int a, Int b) = if a < b
+    then print a
+    else print b;
+
+(* Prints a if compare_fn returns true, prints b otherwise *)
+fun custom_compare(Int a, Int b, ((Int, Int) -> Bool) compare_fn) = if compare_fn(a, b)
+    then print a
+    else print b;
+
+(* Returns true if a is at least two times smaller than b *)
+fun two_times_smaller(Int a, Int b) = (a * 2) < b;
+
+(* Returns the fibonacci of n *)
+fun rec fib(Int n): Int =
+    if n >= 0 then
+        match n with
+            | 0 -> 0 (* fib 0 = 0 *)
+            | 1 -> 1 (* fib 1 = 1 *)
+            | _ -> fib(n-1) + fib(n-2) (* fib n = fib n-1 + fib n-2 *)
+        end
+    else -1;
+
+compare(5, 8);
+compare(9, -23);
+
+custom_compare(4, 5, two_times_smaller);
+custom_compare(2, 5, two_times_smaller);
+
+custom_compare(9, 8, 
+    fn(Int a, Int b) => 
+        (a - 5) < b 
+    end
+);
+
+custom_compare(9, 8, 
+    fn(Int a, Int b) =>
+        (a - 1) < b
+    end
+);
+
+print "";
+print "Fibonacci of 14:";
+print fib(14);
+
+0

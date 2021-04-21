@@ -24,6 +24,11 @@ fun checkBoolT(t: plcType): bool =
       BoolT => true
     | _ => false
 
+fun checkStringT(t: plcType): bool =
+    case t of
+      StringT => true
+    | _ => false
+
 fun checkIntOrBoolT(t: plcType): bool =
     case t of
       IntT => true
@@ -141,6 +146,7 @@ fun teval(e: expr, en): plcType =
     case e of
       ConI x => IntT
     | ConB x => BoolT
+    | ConS x => StringT
     | ESeq t => t
     | Var(name) => lookup en name
     | Let(name, e1, e2) => teval(e2, (name, teval(e1, en))::en)

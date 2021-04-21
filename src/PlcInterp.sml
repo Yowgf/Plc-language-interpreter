@@ -97,6 +97,7 @@ fun eval (e, en) =
     case e of
         ConI(x) => IntV(x)
       | ConB(x) => BoolV(x)
+      | ConS(x) => StringV(x)
       | ESeq(_) => SeqV([])
       | Var(name) => lookup en name
       | Let(name, e1, e2) => eval(e2, (name, eval(e1, en))::en)
